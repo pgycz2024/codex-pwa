@@ -1,0 +1,12 @@
+node_modules/
+npm-debug.log*
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+dist/
+*.tgz
+*.tar.gz
+*.bundle
+*.zip

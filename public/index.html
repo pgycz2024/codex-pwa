@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0c0f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Codex Remote" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Codex Remote</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg?v=27" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=27" />
+    <link rel="shortcut icon" type="image/png" href="/icon-192.png?v=27" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png?v=27" />
+    <link rel="mask-icon" href="/icon.svg?v=27" color="#63e6be" />
+    <link rel="stylesheet" href="/vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main id="authGate" class="auth-gate">
+      <section class="login-card" aria-labelledby="loginTitle">
+        <div class="login-brand"><img src="/icon.svg" alt="" /></div>
+        <span class="eyebrow">TRUSTED DEVICE</span>
+        <h1 id="loginTitle">登录 Codex Remote</h1>
+        <p>首次登录后可将此浏览器记为可信设备 90 天。服务应只通过受控私网或受信任的 HTTPS 入口访问。</p>
+        <form id="loginForm" class="login-form">
+          <label class="field">
+            <span>用户名</span>
+            <input id="loginUsername" value="codex" autocomplete="username" required />
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input id="loginPassword" type="password" autocomplete="current-password" required />
+          </label>
+          <label class="remember-device">
+            <input id="rememberDevice" type="checkbox" checked />
+            <span>记住此设备 90 天</span>
+          </label>
+          <p id="loginError" class="login-error hidden" role="alert"></p>
+          <button id="loginButton" class="primary-button full-width" type="submit">登录</button>
+        </form>
+        <small>若清除浏览器 Cookie、修改访问密码或注销全部设备，需要重新登录。</small>
+      </section>
+    </main>
+
+    <div id="appShell" class="app-shell hidden">
+      <aside id="sidebar" class="sidebar" aria-label="任务列表">
+        <div class="sidebar-brand">
+          <div class="brand-mark"><img src="/icon.svg" alt="" /></div>
+          <div class="brand-copy">
+            <strong>Codex Remote</strong>
+            <span id="instanceName">Linux Server</span>
+          </div>
+          <button id="closeSidebarButton" class="icon-button mobile-only" type="button" aria-label="关闭侧栏">×</button>
+        </div>
+
+        <button id="newTaskButton" class="new-task-button" type="button">
+          <span aria-hidden="true">＋</span>
+          新建任务
+          <kbd class="desktop-only">N</kbd>
+        </button>
+
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" /></svg>
+          <input id="threadSearch" type="search" placeholder="搜索任务" autocomplete="off" />
+          <button id="clearSearchButton" class="clear-search hidden" type="button" aria-label="清除搜索">×</button>
+        </div>
+
+        <div class="list-tabs" role="tablist" aria-label="任务范围">
+          <button id="recentTab" class="list-tab active" type="button" role="tab" aria-selected="true">近7天会话</button>
+          <button id="allHistoryTab" class="list-tab" type="button" role="tab" aria-selected="false">全部历史会话</button>
+          <button id="archivedTab" class="list-tab" type="button" role="tab" aria-selected="false">已归档会话</button>
+          <button id="refreshButton" class="icon-button compact" type="button" aria-label="刷新任务">↻</button>
+        </div>
+
+        <div id="threadList" class="thread-list" aria-live="polite"></div>
+        <button id="loadMoreThreadsButton" class="load-more-threads hidden" type="button">加载更多任务</button>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-menu-grid">
+            <button id="serverFilesButton" class="sidebar-utility" type="button"><span aria-hidden="true">▤</span><span>服务器文件</span></button>
+            <button id="themeButton" class="sidebar-utility" type="button" aria-label="切换深浅色模式">
+              <span id="themeIcon" aria-hidden="true">☾</span>
+              <span id="themeLabel">深/浅色模式</span>
+            </button>
+            <button id="helpButton" class="sidebar-utility" type="button"><span aria-hidden="true">?</span><span>使用帮助</span></button>
+            <button id="trustedDevicesButton" class="sidebar-utility" type="button"><span aria-hidden="true">◉</span><span>已登录设备管理</span></button>
+            <button id="logoutButton" class="sidebar-utility" type="button"><span aria-hidden="true">↪</span><span>退出当前设备</span></button>
+            <button id="refreshWebUiButton" class="sidebar-utility" type="button"><span aria-hidden="true">↻</span><span>刷新 Web UI</span></button>
+          </div>
+          <div class="server-status">
+            <span id="connectionDot" class="status-dot connecting"></span>
+            <div class="server-status-copy">
+              <strong id="connectionLabel">正在连接…</strong>
+              <span class="status-separator" aria-hidden="true">·</span>
+              <span id="networkLabel">受控私有网络</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <button id="sidebarBackdrop" class="sidebar-backdrop hidden" type="button" aria-label="关闭侧栏"></button>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <button id="menuButton" class="icon-button mobile-only" type="button" aria-label="打开任务列表">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          </button>
+          <div class="topbar-title">
+            <h1 id="chatTitle">Codex Remote</h1>
+            <p id="chatMeta">点击左侧主菜单查看历史会话</p>
+          </div>
+          <div class="topbar-actions">
+            <button id="contextButton" class="icon-button hidden" type="button" aria-label="任务详情">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3" /></svg>
+              <span id="changeCountBadge" class="button-badge hidden">0</span>
+            </button>
+            <details id="chatMenu" class="menu-popover hidden">
+              <summary class="icon-button" aria-label="更多操作">⋮</summary>
+              <div class="popover-menu">
+                <button id="renameThreadButton" type="button">重命名</button>
+                <button id="pinThreadButton" type="button">置顶</button>
+                <button id="releaseThreadButton" type="button">停止实时跟进</button>
+                <button id="archiveThreadButton" type="button">归档</button>
+                <button id="goalThreadButton" type="button">创建 Goal</button>
+                <button id="copyThreadIdButton" type="button">复制任务 ID</button>
+              </div>
+            </details>
+          </div>
+        </header>
+
+        <section id="emptyState" class="empty-state">
+          <div class="empty-orbit"><img src="/icon.svg" alt="" /></div>
+          <h2>服务器随时待命</h2>
+          <p>即使 Windows 笔记本已经关机，你仍可以从手机继续服务器上的 Codex 工作。</p>
+          <button id="emptyNewTaskButton" class="primary-button" type="button">创建新任务</button>
+          <div class="suggestion-grid">
+            <button class="suggestion" type="button" data-prompt="检查当前项目的状态，概括最近的改动和待处理问题。">
+              <span>项目巡检</span><small>总结代码和待办</small>
+            </button>
+            <button class="suggestion" type="button" data-prompt="运行项目测试，诊断失败原因并修复问题。">
+              <span>运行测试</span><small>诊断并修复失败</small>
+            </button>
+            <button class="suggestion" type="button" data-prompt="查看服务器当前状态，找出异常服务或资源占用。">
+              <span>服务器检查</span><small>服务与资源状态</small>
+            </button>
+          </div>
+        </section>
+
+        <section id="chatView" class="chat-view hidden">
+          <div class="conversation-stage">
+            <div id="approvalArea" class="approval-area"></div>
+            <section id="goalBar" class="goal-bar hidden" aria-live="polite"></section>
+            <div id="messages" class="messages" aria-live="polite">
+              <div id="historyControls" class="history-controls hidden">
+                <button id="loadMoreHistoryButton" type="button">加载更多历史对话</button>
+                <button id="loadCompleteHistoryButton" type="button">加载完整历史对话</button>
+                <button id="historyNodesButton" type="button">显示历史对话节点</button>
+              </div>
+            </div>
+            <button id="scrollBottomButton" class="scroll-bottom hidden" type="button" aria-label="滚动到底部">↓</button>
+
+            <div class="composer-zone">
+              <form id="composer" class="composer">
+                <textarea id="promptInput" rows="1" placeholder="继续告诉 Codex 要做什么…" required></textarea>
+                <div id="attachmentTray" class="attachment-tray hidden" aria-live="polite"></div>
+                <div class="composer-toolbar">
+                  <div class="composer-options">
+                    <button id="attachButton" class="option-chip attachment-button" type="button">＋ 附件</button>
+                    <input id="fileInput" class="hidden" type="file" multiple />
+                    <input id="photoInput" class="hidden" type="file" accept="image/*" multiple />
+                    <button id="modelChip" class="option-chip" type="button">默认模型</button>
+                    <button id="effortChip" class="option-chip" type="button">默认推理</button>
+                  </div>
+                  <div class="composer-submit-actions">
+                    <button id="stopButton" class="stop-button hidden" type="button" aria-label="中止当前任务">
+                      <span class="stop-square"></span><span>中止</span>
+                    </button>
+                    <button id="sendButton" type="submit" class="send-button" aria-label="发送">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19 0-14m-6 6 6-6 6 6" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <p id="composerHint" class="composer-hint">Codex 可能会执行命令或修改文件，请留意审批请求。</p>
+            </div>
+          </div>
+
+          <aside id="contextPanel" class="context-panel" aria-label="任务详情">
+            <div class="context-heading">
+              <div class="context-tabs" role="tablist">
+                <button id="changesTab" class="context-tab active" type="button" role="tab">变更</button>
+                <button id="infoTab" class="context-tab" type="button" role="tab">信息</button>
+              </div>
+              <button id="closeContextButton" class="icon-button" type="button" aria-label="关闭详情">×</button>
+            </div>
+            <div id="changesPanel" class="context-content"></div>
+            <div id="infoPanel" class="context-content hidden"></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="newTaskDialog">
+      <form id="newTaskForm" class="dialog-form">
+        <div class="dialog-heading">
+          <div><span class="eyebrow">NEW TASK</span><h2>新建 Codex 任务</h2></div>
+          <button type="button" id="closeDialogButton" class="icon-button" aria-label="关闭">×</button>
+        </div>
+        <label class="field full-span">
+          <span>任务内容</span>
+          <textarea id="newPromptInput" name="prompt" rows="6" required placeholder="描述希望 Codex 在服务器上完成的工作…"></textarea>
+        </label>
+        <div class="field full-span">
+          <span>工作目录</span>
+          <div class="cwd-picker-row">
+            <input id="cwdInput" name="cwd" autocomplete="off" required />
+            <button id="browseDirectoryButton" class="browse-directory-button" type="button">浏览</button>
+          </div>
+        </div>
+        <div class="field full-span">
+          <span>附件（可选）</span>
+          <div class="new-upload-picker">
+            <button id="newAttachButton" class="secondary-upload-button" type="button">＋ 添加附件</button>
+            <small>文件会先保存到上述工作目录，再启动任务。</small>
+          </div>
+          <input id="newFileInput" class="hidden" type="file" multiple />
+          <input id="newPhotoInput" class="hidden" type="file" accept="image/*" multiple />
+          <div id="newAttachmentTray" class="attachment-tray dialog-attachments hidden" aria-live="polite"></div>
+        </div>
+        <label class="field">
+          <span>模型</span>
+          <select id="newModelSelect" name="model"><option value="">默认模型</option></select>
+        </label>
+        <label class="field">
+          <span>推理强度</span>
+          <select id="newEffortSelect" name="effort"><option value="">模型默认</option></select>
+        </label>
+        <label class="field full-span">
+          <span>访问权限</span>
+          <select id="newPermissionSelect" name="permissionPreset">
+            <option value="request">请求批准</option>
+            <option value="auto">帮我批准</option>
+            <option value="full">完全批准</option>
+          </select>
+        </label>
+        <p class="hint full-span">“请求批准”由你处理审批；“帮我批准”由 Codex 自动审阅；“完全批准”允许直接访问服务器环境，请谨慎使用。</p>
+        <details id="newGoalDetails" class="goal-create full-span">
+          <summary>设置长期 Goal（可选）</summary>
+          <div class="goal-create-grid">
+            <label class="field full-span"><span>目标描述</span><textarea id="newGoalObjective" rows="3" maxlength="4000" placeholder="例如：完成论文结果复核，并保留可重复运行的验证流程"></textarea></label>
+            <label class="field"><span>Token 预算（可选）</span><input id="newGoalBudget" type="number" min="0" step="1" inputmode="numeric" placeholder="不限制" /></label>
+            <p class="hint">创建任务后会立即绑定 Goal；之后可在任务顶部编辑、暂停、继续或结束。</p>
+          </div>
+        </details>
+        <button type="submit" class="primary-button full-width full-span">开始任务</button>
+      </form>
+    </dialog>
+
+    <dialog id="directoryDialog" class="directory-dialog">
+      <section class="directory-picker">
+        <header class="directory-heading">
+          <div><span class="eyebrow">SERVER DIRECTORY</span><h2 id="directoryDialogTitle">选择工作目录</h2></div>
+          <button id="closeDirectoryButton" class="icon-button" type="button" aria-label="关闭目录选择器">×</button>
+        </header>
+
+        <div id="directoryRoots" class="directory-roots hidden" aria-label="授权根目录"></div>
+        <nav id="directoryBreadcrumbs" class="directory-breadcrumbs" aria-label="当前路径"></nav>
+
+        <div class="directory-tools">
+          <div class="directory-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="directorySearch" type="search" placeholder="筛选当前目录" autocomplete="off" />
+          </div>
+          <label class="hidden-directory-toggle">
+            <input id="showHiddenDirectories" type="checkbox" />
+            <span>隐藏目录</span>
+          </label>
+        </div>
+
+        <div class="directory-current">
+          <span>当前位置</span>
+          <code id="directoryCurrentPath">—</code>
+        </div>
+        <div id="directoryList" class="directory-list" aria-live="polite"></div>
+        <p id="directoryLimitNotice" class="directory-limit hidden">当前目录项目较多，仅显示前 500 个子目录。</p>
+
+        <form id="newDirectoryForm" class="directory-create hidden">
+          <label>
+            <span>新文件夹名称</span>
+            <input id="newDirectoryInput" maxlength="120" autocomplete="off" required placeholder="例如：new-project" />
+          </label>
+          <div>
+            <button id="cancelNewDirectoryButton" type="button">取消</button>
+            <button class="primary-button" type="submit">创建并进入</button>
+          </div>
+        </form>
+
+        <footer class="directory-actions">
+          <button id="showNewDirectoryButton" class="secondary-upload-button" type="button">＋ 新建文件夹</button>
+          <button id="chooseDirectoryButton" class="primary-button" type="button">选择当前目录</button>
+        </footer>
+      </section>
+    </dialog>
+
+    <dialog id="fileBrowserDialog" class="file-browser-dialog">
+      <section class="file-browser">
+        <header class="directory-heading">
+          <div><span class="eyebrow">SERVER FILES</span><h2>服务器文件</h2></div>
+          <button id="closeFileBrowserButton" class="icon-button" type="button" aria-label="关闭服务器文件">×</button>
+        </header>
+        <div id="fileBrowserRoots" class="directory-roots hidden file-browser-roots" aria-hidden="true"></div>
+        <div class="directory-tools">
+          <div class="directory-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="fileBrowserSearch" type="search" placeholder="搜索当前目录" autocomplete="off" />
+          </div>
+          <label class="hidden-directory-toggle">
+            <input id="showHiddenFiles" type="checkbox" />
+            <span>隐藏文件</span>
+          </label>
+        </div>
+        <div class="directory-current">
+          <span>当前位置</span>
+          <code id="fileBrowserCurrentPath">—</code>
+        </div>
+        <div id="fileBrowserList" class="file-browser-list" aria-live="polite"></div>
+        <p id="fileBrowserLimitNotice" class="directory-limit hidden">当前目录项目较多，仅显示前 500 项；可使用搜索缩小范围。</p>
+        <footer class="file-browser-actions">
+          <input id="fileBrowserUploadInput" class="hidden" type="file" multiple />
+          <button id="uploadToDirectoryButton" class="secondary-upload-button" type="button">＋ 上传</button>
+          <button id="newFileBrowserFolderButton" class="secondary-upload-button" type="button">＋ 文件夹</button>
+          <button id="refreshFileBrowserButton" class="secondary-upload-button" type="button">↻ 刷新</button>
+          <button id="newTaskFromDirectoryButton" class="primary-button" type="button">在此目录新建任务</button>
+        </footer>
+      </section>
+    </dialog>
+
+    <dialog id="devicesDialog" class="devices-dialog">
+      <section class="devices-panel">
+        <header class="directory-heading">
+          <div><span class="eyebrow">SIGNED-IN DEVICES</span><h2>已登录设备管理</h2></div>
+          <button id="closeDevicesButton" class="icon-button" type="button" aria-label="关闭已登录设备管理">×</button>
+        </header>
+        <p class="devices-intro">这里显示当前仍有效的可信设备，可以重命名、撤销单台设备，或注销其他/全部设备。撤销后，该设备需要重新输入密码。</p>
+        <div id="devicesList" class="devices-list" aria-live="polite"></div>
+        <footer class="devices-actions">
+          <button id="refreshDevicesButton" class="secondary-upload-button" type="button">↻ 刷新</button>
+          <button id="logoutOtherDevicesButton" class="danger-button" type="button">注销其他设备</button>
+          <button id="logoutAllButton" class="danger-button" type="button">注销全部设备</button>
+        </footer>
+      </section>
+    </dialog>
+
+    <dialog id="threadActionDialog" class="thread-action-dialog">
+      <section class="thread-action-sheet">
+        <div class="thread-action-heading">
+          <strong id="threadActionTitle">任务操作</strong>
+          <button id="closeThreadActionButton" class="icon-button" type="button" aria-label="关闭任务操作">×</button>
+        </div>
+        <button id="actionPinThreadButton" type="button">置顶</button>
+        <button id="actionRenameThreadButton" type="button">重命名</button>
+        <button id="actionCopyThreadIdButton" type="button">复制任务 ID</button>
+        <button id="actionArchiveThreadButton" class="danger" type="button">归档</button>
+      </section>
+    </dialog>
+
+    <dialog id="confirmDialog" class="small-dialog">
+      <section class="confirm-panel">
+        <div class="dialog-heading">
+          <div><span id="confirmEyebrow" class="eyebrow">CONFIRM ACTION</span><h2 id="confirmTitle">确认操作</h2></div>
+          <button id="closeConfirmButton" class="icon-button" type="button" aria-label="取消">×</button>
+        </div>
+        <p id="confirmMessage" class="confirm-message"></p>
+        <div class="confirm-actions">
+          <button id="cancelConfirmButton" type="button">取消</button>
+          <button id="submitConfirmButton" class="primary-button" type="button">确认</button>
+        </div>
+      </section>
+    </dialog>
+
+    <dialog id="helpDialog" class="help-dialog">
+      <section class="help-panel">
+        <header class="directory-heading">
+          <div><span class="eyebrow">CODEX REMOTE GUIDE</span><h2>使用帮助</h2></div>
+          <button id="closeHelpButton" class="icon-button" type="button" aria-label="关闭使用帮助">×</button>
+        </header>
+        <div class="help-content">
+          <section class="help-intro">
+            <strong>手机远程控制 Linux 上的 Codex</strong>
+            <p>手机和服务器先加入同一个蒲公英或其他受控私网，再用浏览器打开本页面。Windows 电脑关机后，只要服务器和 Codex daemon 仍在运行，任务也会继续。</p>
+          </section>
+          <div class="help-grid">
+            <details open><summary>开始使用</summary><p>从“新建任务”选择工作目录，设置模型、推理强度和访问权限，然后发送第一条消息。已有任务可直接点开继续。</p></details>
+            <details><summary>运行中与跨端交接</summary><p>绿色状态表示任务仍在运行。手机和 Windows 可以查看同一任务；“停止实时跟进”只停止当前网页订阅，不会终止服务器任务。</p></details>
+            <details><summary>审批与权限</summary><p>“请求批准”需要你逐项处理；“帮我批准”由 Codex 自动审阅；“完全批准”权限最大，请只在可信目录和可信任务中使用。</p></details>
+            <details><summary>文件与附件</summary><p>附件会保存到任务工作目录。侧栏“服务器文件”可以浏览、预览和下载授权根目录内的文件。</p></details>
+            <details><summary>Goal 模式</summary><p>Goal 是跨多轮保留的长期目标；执行计划则是单轮活动。目标支持暂停、继续和清除，清除目标不会删除整个会话。</p></details>
+            <details><summary>连接故障</summary><p>若页面停滞，先确认蒲公英已连接，再刷新页面。切换手机 App 后回到浏览器，页面会自动恢复任务状态和实时输出。</p></details>
+          </div>
+          <section class="help-ask">
+            <label class="field"><span>询问 Codex 在使用本 Web UI 过程中遇到的问题</span><textarea id="helpQuestionInput" rows="4" placeholder="例如：为什么某个任务一直显示等待操作？"></textarea></label>
+            <p class="hint">Web UI 使用帮助对话默认只做解释和诊断；不会自动修改 PWA。若要提出改进，会先要求 Codex 给出方案和影响范围。</p>
+            <div class="help-actions">
+              <button id="askWebUiButton" class="primary-button" type="button">新建 Web UI 使用帮助对话</button>
+              <button id="requestUiChangeButton" class="secondary-upload-button" type="button">提出 Web UI 改进建议</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </dialog>
+
+    <dialog id="historyNodesDialog" class="history-nodes-dialog">
+      <section class="history-nodes-panel">
+        <header class="directory-heading">
+          <div><span class="eyebrow">CONVERSATION NODES</span><h2>历史对话节点</h2></div>
+          <button id="closeHistoryNodesButton" class="icon-button" type="button" aria-label="关闭历史对话节点">×</button>
+        </header>
+        <p class="history-nodes-intro">这里按每轮 Prompt 的开头整理历史节点。点击节点可以定位到对应消息；默认先载入最近记录。</p>
+        <div class="history-nodes-tools">
+          <div class="directory-search">
+            <span aria-hidden="true">⌕</span>
+            <input id="historyNodesSearch" type="search" placeholder="筛选历史节点" autocomplete="off" />
+          </div>
+          <span id="historyNodesStatus" class="history-nodes-status" aria-live="polite"></span>
+        </div>
+        <div id="historyNodesLoading" class="history-nodes-loading-banner hidden" role="status" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span><span class="history-nodes-loading-message">正在加载中……</span>
+        </div>
+        <div id="historyNodesList" class="history-nodes-list" aria-live="polite">
+          <div id="historyNodesCanvas" class="history-nodes-canvas">
+            <div id="historyNodesRows" class="history-nodes-rows"></div>
+          </div>
+        </div>
+        <footer class="history-nodes-actions">
+          <button id="historyNodesLoadMoreButton" class="secondary-upload-button" type="button">加载更早节点</button>
+          <button id="historyNodesLoadAllButton" class="primary-button" type="button">加载全部节点</button>
+        </footer>
+      </section>
+    </dialog>
+
+    <dialog id="deviceRenameDialog" class="small-dialog">
+      <form id="deviceRenameForm" class="dialog-form">
+        <div class="dialog-heading"><h2>重命名设备</h2><button id="closeDeviceRenameButton" class="icon-button" type="button" aria-label="关闭设备重命名">×</button></div>
+        <label class="field"><span>设备名称</span><input id="deviceRenameInput" maxlength="120" required /></label>
+        <button class="primary-button full-width" type="submit">保存</button>
+      </form>
+    </dialog>
+
+    <dialog id="renameDialog" class="small-dialog">
+      <form id="renameForm" class="dialog-form">
+        <div class="dialog-heading"><h2>重命名任务</h2><button id="closeRenameButton" class="icon-button" type="button" aria-label="关闭任务重命名">×</button></div>
+        <label class="field"><span>任务名称</span><input id="renameInput" maxlength="160" required /></label>
+        <button class="primary-button full-width" type="submit">保存</button>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog" class="small-dialog">
+      <form id="settingsForm" class="dialog-form">
+        <div class="dialog-heading"><div><span class="eyebrow">NEXT TURN</span><h2>下一轮设置</h2></div><button id="closeSettingsButton" class="icon-button" type="button" aria-label="关闭下一轮设置">×</button></div>
+        <label class="field"><span>模型</span><select id="settingsModelSelect"><option value="">当前模型</option></select></label>
+        <label class="field"><span>推理强度</span><select id="settingsEffortSelect"><option value="">模型默认</option></select></label>
+        <label class="field"><span>访问权限</span><select id="settingsPermissionSelect"><option value="request">请求批准</option><option value="auto">帮我批准</option><option value="full">完全批准</option></select></label>
+        <p id="settingsPendingHint" class="hint">只有成功发送下一条新消息后，改动才会写入服务器并应用到后续轮次。</p>
+        <button class="primary-button full-width" type="submit">应用</button>
+      </form>
+    </dialog>
+
+    <dialog id="goalDialog" class="small-dialog">
+      <form id="goalForm" class="dialog-form">
+        <div class="dialog-heading"><div><span class="eyebrow">GOAL</span><h2 id="goalDialogTitle">编辑 Goal</h2></div><button id="closeGoalButton" class="icon-button" type="button" aria-label="关闭 Goal 编辑">×</button></div>
+        <label class="field full-span"><span>目标描述</span><textarea id="goalObjectiveInput" rows="5" maxlength="4000" required placeholder="描述这个长期目标"></textarea></label>
+        <label class="field"><span>Token 预算（可选）</span><input id="goalBudgetInput" type="number" min="0" step="1" inputmode="numeric" placeholder="不限制" /></label>
+        <label class="field"><span>目标状态</span><select id="goalStatusInput"><option value="active">进行中</option><option value="paused">已暂停</option><option value="blocked">已阻塞</option><option value="usageLimited">达到用量限制</option><option value="budgetLimited">达到预算上限</option><option value="complete">已完成</option></select></label>
+        <p id="goalDialogHint" class="hint full-span">保存只更新 Goal，不会自动发送新的消息。</p>
+        <button class="primary-button full-width full-span" type="submit">保存 Goal</button>
+      </form>
+    </dialog>
+
+    <dialog id="attachmentSourceDialog" class="attachment-source-dialog">
+      <section class="attachment-source-picker">
+        <div class="dialog-heading">
+          <div><span class="eyebrow">ADD ATTACHMENT</span><h2>添加附件</h2></div>
+          <button id="closeAttachmentSourceButton" class="icon-button" type="button" aria-label="关闭附件选择">×</button>
+        </div>
+        <div class="attachment-source-actions">
+          <button id="choosePhotoButton" type="button">
+            <span class="attachment-source-icon" aria-hidden="true">▧</span>
+            <span><strong>照片</strong><small>从手机相册或系统照片库选择</small></span>
+            <span aria-hidden="true">›</span>
+          </button>
+          <button id="chooseFileButton" type="button">
+            <span class="attachment-source-icon" aria-hidden="true">▤</span>
+            <span><strong>文件</strong><small>从文件管理器选择任意支持的文件</small></span>
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+        <p class="attachment-source-hint">“照片”不会强制启用相机；具体照片选择界面由手机系统提供。</p>
+      </section>
+    </dialog>
+
+    <div id="offlineBanner" class="offline-banner hidden" role="status" aria-live="polite"></div>
+    <div id="toast" class="toast hidden" role="status"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

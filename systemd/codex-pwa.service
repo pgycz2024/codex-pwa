@@ -1,0 +1,21 @@
+[Unit]
+Description=Codex mobile PWA bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/codex-pwa
+ExecStart=/usr/bin/node %h/codex-pwa/server.mjs
+EnvironmentFile=%h/.config/codex-pwa/codex-pwa.env
+Environment=NODE_ENV=production
+Restart=on-failure
+RestartSec=3
+UMask=0077
+MemoryHigh=768M
+MemoryMax=1G
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,9 @@
+[Unit]
+Description=Forward private-network traffic to the local Codex PWA
+Requires=codex-pwa.service
+After=codex-pwa.service
+
+[Service]
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd 127.0.0.1:@PORT@
+NoNewPrivileges=true
+PrivateTmp=true

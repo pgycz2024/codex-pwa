@@ -1,0 +1,25 @@
+{
+  "name": "codex-pwa",
+  "version": "0.18.7",
+  "private": true,
+  "type": "module",
+  "description": "A polished mobile-first remote client for Codex app-server.",
+  "scripts": {
+    "start": "node server.mjs",
+    "setup": "bash scripts/install-user.sh",
+    "doctor": "bash scripts/doctor.sh",
+    "release:local": "bash scripts/make-release.sh",
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/file-preview.js && node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "busboy": "1.6.0",
+    "dompurify": "3.4.14",
+    "katex": "0.18.5",
+    "marked": "18.0.11",
+    "pdfjs-dist": "6.3.289",
+    "ws": "^8.21.3"
+  }
+}

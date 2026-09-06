@@ -1,0 +1,33 @@
+# Security policy
+
+Codex PWA can execute commands and expose files with the permissions of the Linux user running it. Treat it as a remote administration interface, not as an ordinary static website.
+
+## Required deployment boundaries
+
+- Give every person a separate Linux account, Codex login, daemon, PWA process, port, password, and allowed root.
+- Keep the Node service on `127.0.0.1`. Expose it only through a private-network socket proxy or a trusted HTTPS reverse proxy.
+- Never expose the PWA or an unauthenticated app-server socket directly to the public Internet.
+- Keep `CODEX_PWA_ROOTS` limited to directories that belong to that user.
+- Use a separate high TCP port for each user's private-network listener.
+- Enable systemd linger only for the intended Linux account.
+
+## Files that must never be committed
+
+- API keys, access tokens, `~/.codex/auth.json`, or other Codex credentials
+- `~/.config/codex-pwa/access-password`
+- `~/.config/codex-pwa/trusted-devices.json`
+- generated `.env` files, logs, uploaded private data, or rollout/session files
+
+## Publishing from a shared server
+
+- Do not sign a personal GitHub account into the shared Linux server.
+- Do not store a personal GitHub token or account-wide SSH key on the server.
+- Do not publish the development repository's `.git` directory; deleted private values can remain in historical objects.
+- Build the sanitized ZIP and clean one-commit Git bundle, download them over the existing SSH connection, and push to GitHub from the maintainer's own computer.
+- If direct server-side cloning is unavoidable, prefer a read-only deploy key limited to one repository.
+
+The installer stores PWA configuration under `~/.config/codex-pwa` with restrictive permissions. Changing the PWA password invalidates previously trusted devices.
+
+## Reporting
+
+For an internal deployment, report security issues privately to the repository owner or server administrator. Do not include real credentials, task transcripts, or private server paths in a public issue.

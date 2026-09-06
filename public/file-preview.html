@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0c0f" />
+    <title>文件预览 · Codex Remote</title>
+    <link rel="icon" href="/icon.svg" />
+    <link rel="stylesheet" href="/file-preview.css" />
+  </head>
+  <body>
+    <header class="viewer-bar">
+      <a class="viewer-back" href="/" aria-label="返回任务">‹</a>
+      <div class="viewer-title">
+        <strong id="fileName">正在打开文件…</strong>
+        <span id="fileMeta">请稍候</span>
+      </div>
+      <div class="viewer-actions">
+        <div id="zoomControls" class="zoom-controls hidden" aria-label="缩放控制">
+          <button id="zoomOutButton" type="button" aria-label="缩小">−</button>
+          <span id="zoomLabel">100%</span>
+          <button id="zoomInButton" type="button" aria-label="放大">＋</button>
+        </div>
+        <a id="downloadButton" class="download-button hidden" href="#" download aria-label="下载文件">↓</a>
+      </div>
+    </header>
+
+    <main id="preview" class="preview" aria-live="polite">
+      <div class="loading-card"><span class="spinner"></span><p>正在读取服务器文件…</p></div>
+    </main>
+
+    <script type="module" src="/file-preview.js"></script>
+  </body>
+</html>

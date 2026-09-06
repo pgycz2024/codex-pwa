@@ -1,0 +1,10 @@
+[Unit]
+Description=Private-network listener for Codex PWA
+
+[Socket]
+ListenStream=@PRIVATE_IP@:@PORT@
+NoDelay=true
+FreeBind=true
+
+[Install]
+WantedBy=sockets.target
