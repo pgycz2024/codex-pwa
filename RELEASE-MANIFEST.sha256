@@ -2,9 +2,9 @@
 6f51a88964819ce5ae22e5446dd0059858494c69948ccfec2d33f7cc55e837d1  ./.github/workflows/check.yml
 8b1e7e26a978c6218f75cb521a0c2258a5947d38c20028e171885c28fb76c949  ./.github/workflows/release.yml
 d8b52d27b70ac724ebbacc556b36e3ff78cb17f6e600936d764755345301e032  ./.gitignore
-0861f548c6207c98c38e4f808e51a9bfb69ad40592c6b22b0a48edc7043d1969  ./CHANGELOG.md
+c08c214591713978b2e771407a4a1cd9eea8af2baaa26203f573ea7682adb2ea  ./CHANGELOG.md
 393fb7f844b8ff533de2f2856d7c7b9be3e4ed478f209500d760dc359b109e61  ./LICENSE
-8ef0f67fc9c3d0b05f90aa0e3302884fba7d6e36c21c0e1c5c95147566f1da30  ./README.md
+34b21e50e10e90643e55b507098fe7cdbfab705b3bc9c59876bb0509100a103a  ./README.md
 c751f4d667c7894f7b9180ae58ac08a7ce4a7f64fedfeb8bfcfafaec6ff9534c  ./SECURITY.md
 e7d4bd854761ffb245cf4788bf07f08530b83ecd1c0928b38b4d3b7241534461  ./artifact-store.mjs
 10c575f9986198f9cb255f6535eb6aebc19f3f94eae75b495d9e9ebe2c5419cd  ./auth-store.mjs
@@ -12,8 +12,8 @@ a0bfb0e49ea939cb12ad7be0e932df9f59946efd83fd42d1328ff7178bb0f566  ./directory-ut
 194c228066b0f04f078c3a6ef01c8cb6cac0af9a0649d1ab6314670c09b161f9  ./docs/PUBLISHING.md
 422bcccd3a4fd22f02f5caf344552f91f14b962b39891ff1d07e3dfd8db1170c  ./docs/TEAM_DEPLOYMENT.md
 1c1473ae0a7800853ee073f70967947dca4cccb27da29b2c1756a84fdfdfdaef  ./file-access.mjs
-c49e269d23c4faaf6f4fef470dae6c3ac0a737bd7a719bfdda0fd2a5f435f1e6  ./package-lock.json
-2c82014225be5561895c08180d8d2551e1614ce7addf76968cdd0849ac7bb78e  ./package.json
+9713603327bc6bdd35f8b1678ecd23ad64f2d7ab48296cdd4d4098554bc16823  ./package-lock.json
+ec9e743a8ff512f716f42d2befcd73a8186a2b915c11a8c7eb8a23b1a6605e32  ./package.json
 299c4e14c5812b6bb7a276aa446f1a5296d19ce44417881b1f00009aebe52f7c  ./public/app.js
 81f7b01bf931010674cd4a080360979a101ce09e4e89cf449d415c1c07fbe03b  ./public/file-links.js
 ce5d5b2b3f47d1cabe3bf2f5f92fa5b2811d5b4bd1632cb2532c2ba5d8e5b907  ./public/file-preview.css
@@ -45,8 +45,8 @@ dc7f5a4e935db7e917252fecbd177725e96f138368f609d21ce4a78103e2932d  ./scripts/inst
 8bfc4fab9d0cd5a143f127ab7dc6312d325d56226543b96433656ff1b861ffd5  ./systemd/codex-pwa-private.service.in
 f5f66b8662427919a71893c8c8d7a60a6f1885a8cb10978e9622cc9d6fcd1928  ./systemd/codex-pwa-private.socket.in
 16f650acde765803828ac8d4a42190006263e657efb42f76a07c353b35b68ca8  ./systemd/codex-pwa.service
-6f04a9605d4afde250f146843246c6adf01277bf8850b2ccae88b3646145a12f  ./test/mobile-browser.test.mjs
-c677f3d4bcf55bef69b3d885015bb52df83b9e41e210ec9eb70c6515d6443735  ./test/server-static.test.mjs
+256b1815df79ffef9719aa0894f4cdf8f76af9ff501480c30ef9a433f48cde92  ./test/mobile-browser.test.mjs
+0a06d3be09697b999077b3909c3128d9a0b5753b3b04a5e323697edd4ff47cf3  ./test/server-static.test.mjs
 18be48444dc28e441b91a3fb9da451f73105fc616e18ca3b2ed8392bf40ec5c3  ./thread-history.mjs
 ea0fa05ce162e2d10488b37d3edc4cd9bfc607a31c9b029272b3f2423db5db25  ./thread-settings.mjs
 38b38000750d00e0b66c000f4fac8f5aaeba0b5111a935d373f1ea0d61a91a30  ./upload-utils.mjs

@@ -28,15 +28,22 @@ async function reservePort() {
   return port;
 }
 
-async function waitForJson(url, attempts = 120) {
+async function waitForJson(url, { attempts = 120, child = null, diagnostics = null } = {}) {
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
       const response = await fetch(url);
       if (response.ok) return response.json();
     } catch {}
+    if (child?.exitCode !== null) {
+      const detail = String(diagnostics?.() || "").trim();
+      throw new Error(
+        `Process exited with code ${child.exitCode} while waiting for ${url}${detail ? `\n${detail}` : ""}`,
+      );
+    }
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  throw new Error(`Timed out waiting for ${url}`);
+  const detail = String(diagnostics?.() || "").trim();
+  throw new Error(`Timed out waiting for ${url}${detail ? `\n${detail}` : ""}`);
 }
 
 class CdpSession {
@@ -101,7 +108,7 @@ function jsonRoute(url) {
   if (parsed.pathname === "/api/status") {
     return {
       bridge: "ready", roots: ["/srv/example"], appRoot: projectDirectory,
-      instanceName: "Mobile Test", networkLabel: "受控测试私网", version: "0.18.8",
+      instanceName: "Mobile Test", networkLabel: "受控测试私网", version: "0.18.9",
       activeTurns: {}, ownedThreads: [], releasingThreads: [], pendingApprovals: [],
     };
   }
@@ -215,19 +222,30 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
-  server.stdout.resume();
-  server.stderr.resume();
+  let serverDiagnostics = "";
+  const retainServerDiagnostics = (chunk) => {
+    serverDiagnostics = `${serverDiagnostics}${chunk}`.slice(-16_384);
+  };
+  server.stdout.on("data", retainServerDiagnostics);
+  server.stderr.on("data", retainServerDiagnostics);
   const browser = spawn(chrome, [
     "--headless=new",
+    ...(process.env.CI ? ["--no-sandbox"] : []),
     `--remote-debugging-port=${debugPort}`,
+    "--remote-debugging-address=127.0.0.1",
     `--user-data-dir=${join(root, "chrome-profile")}`,
     "--disable-background-networking",
     "--disable-component-update",
     "--disable-dev-shm-usage",
+    "--disable-gpu",
     "--disable-sync",
     "--no-first-run",
     "about:blank",
-  ], { stdio: "ignore" });
+  ], { stdio: ["ignore", "ignore", "pipe"] });
+  let browserDiagnostics = "";
+  browser.stderr.on("data", (chunk) => {
+    browserDiagnostics = `${browserDiagnostics}${chunk}`.slice(-16_384);
+  });
   let cdp = null;
   t.after(async () => {
     if (cdp) {
@@ -244,8 +262,15 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 
-  await waitForJson(`http://127.0.0.1:${appPort}/api/auth/session`);
-  await waitForJson(`http://127.0.0.1:${debugPort}/json/version`);
+  await waitForJson(`http://127.0.0.1:${appPort}/api/auth/session`, {
+    child: server,
+    diagnostics: () => serverDiagnostics,
+  });
+  await waitForJson(`http://127.0.0.1:${debugPort}/json/version`, {
+    attempts: 600,
+    child: browser,
+    diagnostics: () => browserDiagnostics,
+  });
   const target = await fetch(`http://127.0.0.1:${debugPort}/json/new?about:blank`, { method: "PUT" }).then((response) => response.json());
   cdp = new CdpSession(target.webSocketDebuggerUrl);
   await cdp.open();
