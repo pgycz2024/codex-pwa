@@ -1,6 +1,6 @@
 # 隐私优先的发布流程
 
-本项目默认假设 Linux 服务器是多人共用环境。发布者的 GitHub 登录、Token 和 SSH 私钥不得进入服务器。
+本项目默认假设 Linux 服务器是多人共用环境。发布者的 GitHub 登录、Token 和个人 SSH 私钥不得进入服务器。默认采用 Windows 上传；需要自动化时，也可以使用仅限一个仓库的 Deploy Key 和独立干净镜像。
 
 ## 发布边界
 
@@ -99,6 +99,33 @@ npm run setup
 
 愿意为单个私有仓库配置只读 Deploy Key 的组员，也可以直接克隆 GitHub 仓库；不要在共享服务器保存能够访问多个私人仓库的个人 SSH Key。
 
-## 六、后续版本
+## 六、可选：仓库专用 Deploy Key 自动发布
 
-后续仍在 Linux 服务器生成新的 ZIP 和 clean Git bundle，再下载到 Windows 审阅。Windows 上的 GitHub 仓库作为对外分享时间线，服务器上的内部开发仓库继续保持私有且不上传。
+自动发布不得给开发仓库添加 GitHub remote。推荐结构：
+
+```text
+私有开发仓库 → 测试与隐私扫描 → 干净 ZIP → 独立发布镜像 → GitHub
+```
+
+安全要求：
+
+- Deploy Key 只绑定一个 GitHub 仓库，按发布需要开启写权限；
+- 私钥不加入全局 `ssh-agent`，只通过发布镜像本地的 `core.sshCommand` 使用；
+- 使用经过核验的独立 `UserKnownHostsFile` 和 `StrictHostKeyChecking=yes`；
+- 发布镜像必须与私有开发仓库位于不同目录；
+- 不允许 force-push，不移动旧标签；分支和标签必须原子推送；
+- GitHub Actions 只有 Release 工作流获得当前仓库的 `contents: write`，普通检查保持只读。
+
+完成一次性 Deploy Key 和镜像配置后，在已经提交并标记新版本的私有开发仓库运行：
+
+```bash
+bash scripts/publish-mirror.sh --mirror "$HOME/codex-pwa-public" --push
+```
+
+脚本会重新运行完整测试、生成并校验发布文件、解压验证内部清单，只将已清洗 ZIP 的内容同步进镜像，然后原子推送 `main` 与版本标签。GitHub 收到标签后会再次运行相同测试，全部通过才创建 Release 并附加 ZIP、clean Git bundle 和 SHA-256 校验文件。
+
+撤销服务器发布权限只需在 GitHub 仓库的 `Settings → Deploy keys` 删除对应密钥，并删除服务器上的专用私钥。仓库其他内容和个人账号凭据不受影响。
+
+## 七、后续版本
+
+后续可以继续在 Linux 服务器生成新的 ZIP 和 clean Git bundle，再下载到 Windows 审阅和推送；也可以使用上述隔离镜像自动发布。无论采用哪种方式，服务器内部开发仓库都继续保持私有且不直接上传。

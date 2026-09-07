@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.7`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.8`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -29,6 +29,8 @@
 `v0.18.6` 为历史节点定位增加弹窗内可见的加载条，避免原生模态框遮挡顶部提示，并在定位期间锁定节点操作，完成后自动恢复。
 
 `v0.18.7` 修复新模型未出现在 app-server 模型目录时被错误显示为默认模型的问题，并兼容任务模型设置的嵌套响应结构。
+
+`v0.18.8` 修复 GitHub Actions 中移动端浏览器启动竞态与 Node.js 工具链路径差异，使发布前检查可在 GitHub 托管运行器稳定复现；同时支持通过隔离的干净镜像和仓库专用 Deploy Key 原子推送版本，标签测试通过后自动创建 GitHub Release。
 
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
@@ -187,6 +189,14 @@ npm run check
 
 所有源代码采用 MIT License。`npm run release:local` 会生成不含开发历史、凭据、任务和依赖目录的干净 ZIP，以及从已清洗快照重新初始化的单提交 Git bundle。不要直接分享现有工作仓库、其 `.git` 目录或由该开发仓库直接导出的 bundle。
 
+维护者如需从共享服务器自动发布，可为单一 GitHub 仓库配置专用的写入 Deploy Key，并使用完全独立的干净镜像：
+
+```bash
+bash scripts/publish-mirror.sh --mirror "$HOME/codex-pwa-public" --push
+```
+
+该命令只会把刚刚通过检查和隐私扫描的 ZIP 快照同步进镜像，以原子操作推送 `main` 与新标签。密钥必须通过镜像本地的 `core.sshCommand` 绑定，不能放入项目文件或全局 `ssh-agent`。完整边界见 [docs/PUBLISHING.md](docs/PUBLISHING.md)。
+
 ## 官方接口依据
 
 PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 OpenAI 文档说明 `codex app-server --listen unix://` 可在默认 app-server control socket 接受连接；`codex app-server daemon bootstrap`/`start` 用于 SSH 场景下的持久 daemon 管理。参考：
@@ -216,5 +226,6 @@ PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 O
 - `v0.18.5`：确认操作高对比配色与长耗时操作统一加载反馈
 - `v0.18.6`：修复历史节点定位提示被模态框遮挡的问题
 - `v0.18.7`：保留未列入模型目录的任务模型，并兼容新版任务设置响应
+- `v0.18.8`：修复 GitHub Actions 环境差异，并加入隔离镜像自动发布链路
 
 Git 发布可使用版本标签。ZIP 更新会保留最近三份可恢复的旧程序目录。出现问题时只需恢复程序目录并重启该用户自己的 `codex-pwa.service`；不需要重启 Linux、共享 Codex daemon 或其他用户的任务。

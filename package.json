@@ -1,6 +1,6 @@
 {
   "name": "codex-pwa",
-  "version": "0.18.7",
+  "version": "0.18.8",
   "private": true,
   "type": "module",
   "description": "A polished mobile-first remote client for Codex app-server.",

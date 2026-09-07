@@ -59,7 +59,7 @@ test("package, server, and documentation share one application version", async (
     readFile(new URL("../server.mjs", import.meta.url), "utf8"),
     readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
-  assert.equal(manifest.version, "0.18.7");
+  assert.equal(manifest.version, "0.18.8");
   assert.match(server, /APP_VERSION = JSON\.parse\(readFileSync\(join\(here, "package\.json"\)/);
   assert.doesNotMatch(server, /APP_VERSION = "\d+\.\d+\.\d+"/);
   assert.ok(readme.includes(`当前版本为 \`${manifest.version}\``));
@@ -190,10 +190,12 @@ test("doctor supports legacy inline service environments", async () => {
 });
 
 test("ZIP distribution excludes Git history and has atomic update and compatible uninstall paths", async () => {
-  const [release, update, uninstall] = await Promise.all([
+  const [release, update, uninstall, publish, releaseWorkflow] = await Promise.all([
     readFile(new URL("../scripts/make-release.sh", import.meta.url), "utf8"),
     readFile(new URL("../scripts/update-user.sh", import.meta.url), "utf8"),
     readFile(new URL("../scripts/uninstall-user.sh", import.meta.url), "utf8"),
+    readFile(new URL("../scripts/publish-mirror.sh", import.meta.url), "utf8"),
+    readFile(new URL("../.github/workflows/release.yml", import.meta.url), "utf8"),
   ]);
   assert.match(release, /codex-pwa-\$tag\.zip/);
   assert.match(release, /codex-pwa-\$tag-clean-git\.bundle/);
@@ -218,6 +220,13 @@ test("ZIP distribution excludes Git history and has atomic update and compatible
   assert.match(uninstall, /codex-pwa-private\.service/);
   assert.match(uninstall, /codex-pwa-pgy\.socket/);
   assert.match(uninstall, /codex-pwa-pgy\.service/);
+  assert.match(publish, /npm run release:local/);
+  assert.match(publish, /rsync -a --delete --exclude='\/\.git\/'/);
+  assert.match(publish, /git -C "\$mirror" push --atomic origin main "\$tag"/);
+  assert.doesNotMatch(publish, /push .*--force/);
+  assert.match(releaseWorkflow, /permissions:\s*\n\s*contents: write/);
+  assert.match(releaseWorkflow, /npm run release:local/);
+  assert.match(releaseWorkflow, /gh release create/);
 });
 
 test("ZIP updater resolves the health port from a legacy inline systemd environment", async (t) => {
@@ -232,7 +241,9 @@ test("ZIP updater resolves the health port from a legacy inline systemd environm
     env: {
       ...process.env,
       XDG_CONFIG_HOME: join(root, "config"),
-      PATH: `${bin}:/usr/bin:/bin`,
+      // setup-node installs Node outside /usr/bin on GitHub-hosted runners.
+      // Preserve the running Node binary while keeping the fake systemctl first.
+      PATH: `${bin}:${dirname(process.execPath)}:/usr/bin:/bin`,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });

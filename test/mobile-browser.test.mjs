@@ -101,7 +101,7 @@ function jsonRoute(url) {
   if (parsed.pathname === "/api/status") {
     return {
       bridge: "ready", roots: ["/srv/example"], appRoot: projectDirectory,
-      instanceName: "Mobile Test", networkLabel: "受控测试私网", version: "0.18.7",
+      instanceName: "Mobile Test", networkLabel: "受控测试私网", version: "0.18.8",
       activeTurns: {}, ownedThreads: [], releasingThreads: [], pendingApprovals: [],
     };
   }
@@ -288,7 +288,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     width: 390, height: 844, deviceScaleFactor: 2, mobile: true,
   });
   await cdp.send("Page.navigate", { url: `http://127.0.0.1:${appPort}/` });
-  await waitForExpression(cdp, `!document.getElementById("appShell").classList.contains("hidden") && document.querySelector(".thread-card")`);
+  await waitForExpression(cdp, `Boolean(document.getElementById("appShell") && !document.getElementById("appShell").classList.contains("hidden") && document.querySelector(".thread-card"))`);
 
   const shellGeometry = await evaluate(cdp, `({
     innerHeight,

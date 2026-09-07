@@ -23,8 +23,10 @@ Codex PWA can execute commands and expose files with the permissions of the Linu
 - Do not sign a personal GitHub account into the shared Linux server.
 - Do not store a personal GitHub token or account-wide SSH key on the server.
 - Do not publish the development repository's `.git` directory; deleted private values can remain in historical objects.
-- Build the sanitized ZIP and clean one-commit Git bundle, download them over the existing SSH connection, and push to GitHub from the maintainer's own computer.
-- If direct server-side cloning is unavoidable, prefer a read-only deploy key limited to one repository.
+- The safest default is to build the sanitized ZIP and clean one-commit Git bundle, download them over the existing SSH connection, and push to GitHub from the maintainer's own computer.
+- Automated publishing may use a dedicated write-enabled Deploy Key limited to exactly one repository. Never reuse a personal SSH identity or place the key in a global agent.
+- Keep the GitHub checkout separate from the development repository. Only synchronize the already-sanitized ZIP snapshot with `scripts/publish-mirror.sh`; never attach a GitHub remote to private development history.
+- Pin GitHub host keys, bind the Deploy Key through the mirror's local `core.sshCommand`, require atomic non-force pushes, and revoke the key immediately if the server account is compromised.
 
 The installer stores PWA configuration under `~/.config/codex-pwa` with restrictive permissions. Changing the PWA password invalidates previously trusted devices.
 
