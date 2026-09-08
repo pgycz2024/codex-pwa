@@ -41,7 +41,8 @@
           <p id="loginError" class="login-error hidden" role="alert"></p>
           <button id="loginButton" class="primary-button full-width" type="submit">登录</button>
         </form>
-        <small>若清除浏览器 Cookie、修改访问密码或注销全部设备，需要重新登录。</small>
+        <button id="changeCredentialsLoginButton" class="secondary-upload-button full-width" type="button">修改用户名或密码</button>
+        <small>若清除浏览器 Cookie、修改用户名或密码，或注销全部设备，需要重新登录。</small>
       </section>
     </main>
 
@@ -350,8 +351,26 @@
           <button id="refreshDevicesButton" class="secondary-upload-button" type="button">↻ 刷新</button>
           <button id="logoutOtherDevicesButton" class="danger-button" type="button">注销其他设备</button>
           <button id="logoutAllButton" class="danger-button" type="button">注销全部设备</button>
+          <button id="changeCredentialsButton" class="secondary-upload-button" type="button">修改用户名或密码</button>
         </footer>
       </section>
+    </dialog>
+
+    <dialog id="credentialsDialog" class="small-dialog">
+      <form id="credentialsForm" class="dialog-form" autocomplete="off">
+        <div class="dialog-heading">
+          <div><span class="eyebrow">ACCOUNT SECURITY</span><h2>修改用户名或密码</h2></div>
+          <button id="closeCredentialsButton" class="icon-button" type="button" aria-label="关闭修改用户名或密码">×</button>
+        </div>
+        <p class="credentials-intro">请先验证当前用户名和密码。新用户名或新密码至少填写一项，留空的项目保持不变。保存后所有已登录设备都会退出，需要使用新凭据重新登录。</p>
+        <label class="field"><span>当前用户名</span><input id="currentUsernameInput" name="currentUsername" autocomplete="username" required /></label>
+        <label class="field"><span>当前密码</span><input id="currentPasswordInput" name="currentPassword" type="password" autocomplete="current-password" required /></label>
+        <label class="field"><span>新用户名（不修改可留空）</span><input id="newUsernameInput" name="newUsername" autocomplete="username" maxlength="120" /></label>
+        <label class="field"><span>新密码（不修改可留空）</span><input id="newPasswordInput" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="4096" /></label>
+        <label class="field"><span>确认新密码</span><input id="confirmNewPasswordInput" name="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="4096" /></label>
+        <p id="credentialsError" class="login-error hidden" role="alert"></p>
+        <button id="saveCredentialsButton" class="primary-button full-width" type="submit">保存并重新登录</button>
+      </form>
     </dialog>
 
     <dialog id="threadActionDialog" class="thread-action-dialog">

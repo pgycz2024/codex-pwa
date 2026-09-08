@@ -171,7 +171,7 @@ const state = {
 
 const elementIds = [
   "appShell", "authGate", "loginForm", "loginUsername", "loginPassword", "rememberDevice",
-  "loginError", "loginButton", "logoutButton", "logoutAllButton", "refreshWebUiButton", "serverFilesButton", "trustedDevicesButton",
+  "loginError", "loginButton", "changeCredentialsLoginButton", "logoutButton", "logoutAllButton", "refreshWebUiButton", "serverFilesButton", "trustedDevicesButton",
   "instanceName", "networkLabel",
   "sidebar", "sidebarBackdrop", "closeSidebarButton", "menuButton", "newTaskButton",
   "emptyNewTaskButton", "threadSearch", "clearSearchButton", "recentTab", "allHistoryTab",
@@ -195,7 +195,8 @@ const elementIds = [
   "fileBrowserSearch", "showHiddenFiles", "fileBrowserCurrentPath", "fileBrowserList",
   "fileBrowserLimitNotice", "fileBrowserUploadInput", "uploadToDirectoryButton", "newFileBrowserFolderButton",
   "refreshFileBrowserButton", "newTaskFromDirectoryButton",
-  "devicesDialog", "closeDevicesButton", "devicesList", "refreshDevicesButton", "logoutOtherDevicesButton",
+  "devicesDialog", "closeDevicesButton", "devicesList", "refreshDevicesButton", "logoutOtherDevicesButton", "changeCredentialsButton",
+  "credentialsDialog", "credentialsForm", "closeCredentialsButton", "currentUsernameInput", "currentPasswordInput", "newUsernameInput", "newPasswordInput", "confirmNewPasswordInput", "credentialsError", "saveCredentialsButton",
   "threadActionDialog", "threadActionTitle", "closeThreadActionButton", "actionPinThreadButton",
   "actionRenameThreadButton", "actionCopyThreadIdButton", "actionArchiveThreadButton", "confirmDialog",
   "confirmEyebrow", "confirmTitle", "confirmMessage", "closeConfirmButton", "cancelConfirmButton",
@@ -4702,6 +4703,67 @@ function openDeviceRename(device) {
   setTimeout(() => elements.deviceRenameInput.select(), 40);
 }
 
+function openCredentialsDialog() {
+  closeAllMenus();
+  elements.currentUsernameInput.value = state.auth.username || elements.loginUsername.value.trim() || "codex";
+  elements.currentPasswordInput.value = "";
+  elements.newUsernameInput.value = elements.currentUsernameInput.value;
+  elements.newPasswordInput.value = "";
+  elements.confirmNewPasswordInput.value = "";
+  elements.credentialsError.textContent = "";
+  elements.credentialsError.classList.add("hidden");
+  elements.credentialsError.classList.remove("notice");
+  if (elements.devicesDialog.open) elements.devicesDialog.close();
+  elements.credentialsDialog.showModal();
+  setTimeout(() => elements.currentPasswordInput.focus(), 40);
+}
+
+async function saveCredentials(event) {
+  event.preventDefault();
+  const newPassword = elements.newPasswordInput.value;
+  if (!elements.newUsernameInput.value.trim() && !newPassword) {
+    elements.credentialsError.textContent = "新用户名或新密码至少填写一项";
+    elements.credentialsError.classList.remove("hidden");
+    elements.credentialsError.classList.remove("notice");
+    elements.newUsernameInput.focus();
+    return;
+  }
+  if (newPassword || elements.confirmNewPasswordInput.value) {
+    if (newPassword !== elements.confirmNewPasswordInput.value) {
+      elements.credentialsError.textContent = "两次输入的新密码不一致";
+      elements.credentialsError.classList.remove("hidden");
+      elements.credentialsError.classList.remove("notice");
+      elements.confirmNewPasswordInput.select();
+      return;
+    }
+  }
+  elements.saveCredentialsButton.disabled = true;
+  elements.saveCredentialsButton.textContent = "正在保存…";
+  elements.credentialsError.classList.add("hidden");
+  try {
+    const result = await api("/api/auth/credentials/change", {
+      method: "POST",
+      body: JSON.stringify({
+        currentUsername: elements.currentUsernameInput.value.trim(),
+        currentPassword: elements.currentPasswordInput.value,
+        newUsername: elements.newUsernameInput.value.trim(),
+        newPassword,
+      }),
+    });
+    elements.loginUsername.value = result.username || elements.newUsernameInput.value.trim();
+    elements.credentialsDialog.close();
+    showLogin("用户名或密码已更新，请使用新凭据重新登录");
+  } catch (error) {
+    elements.credentialsError.textContent = error.message;
+    elements.credentialsError.classList.remove("hidden");
+    elements.credentialsError.classList.remove("notice");
+    elements.currentPasswordInput.select();
+  } finally {
+    elements.saveCredentialsButton.disabled = false;
+    elements.saveCredentialsButton.textContent = "保存并重新登录";
+  }
+}
+
 function renderDevices() {
   elements.devicesList.replaceChildren();
   elements.logoutOtherDevicesButton.disabled = !state.devices.some((device) => !device.current);
@@ -5512,6 +5574,7 @@ function wireEvents() {
       elements.loginButton.textContent = "登录";
     }
   });
+  elements.changeCredentialsLoginButton.addEventListener("click", openCredentialsDialog);
   elements.logoutButton.addEventListener("click", async () => {
     const confirmed = await requestConfirmation({
       eyebrow: "LOG OUT DEVICE",
@@ -5624,6 +5687,7 @@ function wireEvents() {
     if (event.target === elements.fileBrowserDialog) closeFileBrowser();
   });
   elements.trustedDevicesButton.addEventListener("click", openDevices);
+  elements.changeCredentialsButton.addEventListener("click", openCredentialsDialog);
   elements.helpButton.addEventListener("click", openHelp);
   elements.closeHelpButton.addEventListener("click", () => elements.helpDialog.close());
   elements.askWebUiButton.addEventListener("click", () => startSupportTask("help"));
@@ -5639,6 +5703,8 @@ function wireEvents() {
   });
   elements.closeDeviceRenameButton.addEventListener("click", () => elements.deviceRenameDialog.close());
   elements.deviceRenameForm.addEventListener("submit", renameDevice);
+  elements.closeCredentialsButton.addEventListener("click", () => elements.credentialsDialog.close());
+  elements.credentialsForm.addEventListener("submit", saveCredentials);
   elements.attachButton.addEventListener("click", () => openAttachmentSource("composer"));
   elements.closeAttachmentSourceButton.addEventListener("click", () => elements.attachmentSourceDialog.close());
   elements.choosePhotoButton.addEventListener("click", () => chooseAttachmentSource("photo"));
@@ -5794,7 +5860,7 @@ function wireEvents() {
   elements.settingsModelSelect.addEventListener("change", () => syncEffortOptions(elements.settingsEffortSelect, elements.settingsModelSelect.value, ""));
   elements.closeGoalButton.addEventListener("click", () => elements.goalDialog.close());
   elements.goalForm.addEventListener("submit", saveGoal);
-  for (const dialog of [elements.newTaskDialog, elements.renameDialog, elements.settingsDialog, elements.goalDialog, elements.deviceRenameDialog]) {
+  for (const dialog of [elements.newTaskDialog, elements.renameDialog, elements.settingsDialog, elements.goalDialog, elements.deviceRenameDialog, elements.credentialsDialog]) {
     dialog.addEventListener("click", (event) => {
       if (event.target !== dialog) return;
       if (dialog === elements.newTaskDialog && state.uploadRequest && state.uploadContext === "new") {

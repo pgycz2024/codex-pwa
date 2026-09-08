@@ -60,6 +60,8 @@ const codexHome = process.env.CODEX_HOME || join(homeDir, ".codex");
 const daemonSocket = process.env.CODEX_PWA_DAEMON_SOCKET ||
   join(codexHome, "app-server-control", "app-server-control.sock");
 const passwordFile = process.env.CODEX_PWA_PASSWORD_FILE || "";
+const usernameFile = process.env.CODEX_PWA_USERNAME_FILE ||
+  (passwordFile ? join(dirname(passwordFile), "access-username") : "");
 const sessionFile = process.env.CODEX_PWA_SESSION_FILE ||
   join(homeDir, ".config", "codex-pwa", "trusted-devices.json");
 const instanceName = String(process.env.CODEX_PWA_INSTANCE_NAME || `${process.env.USER || "user"} 的 Codex`)
@@ -156,7 +158,7 @@ const originatorCache = new Map();
 const artifactIndexCache = new Map();
 const liveArtifacts = new Map();
 const sessionsRoot = join(codexHome, "sessions");
-const authStore = new TrustedDeviceStore({ passwordFile, sessionFile });
+const authStore = new TrustedDeviceStore({ passwordFile, usernameFile, sessionFile });
 const loginRateLimiter = new LoginRateLimiter();
 const globalLoginRateLimiter = new LoginRateLimiter({ maxFailures: 100, maxKeys: 1 });
 let historyOutputCacheBytes = 0;
@@ -967,6 +969,22 @@ function loginRateLimitKey(request, username) {
   return `${address}\n${userAgent}\n${String(username || "").slice(0, 120)}`;
 }
 
+function credentialUsername(value, label = "用户名") {
+  const normalized = String(value ?? "").trim();
+  if (!normalized || normalized.length > 120 || /[\0-\x1f\x7f]/u.test(normalized)) {
+    throw new Error(`${label}必须为 1–120 个不含控制字符的字符`);
+  }
+  return normalized;
+}
+
+function credentialPassword(value, label = "密码") {
+  const normalized = String(value ?? "");
+  if (normalized.length < 8 || normalized.length > 4_096 || /[\0\r\n]/u.test(normalized)) {
+    throw new Error(`${label}长度必须为 8–4096 个字符，且不能包含换行`);
+  }
+  return normalized;
+}
+
 async function handleAuthApi(request, response, url) {
   if (url.pathname === "/api/health" && request.method === "GET") {
     const ready = codex.status === "ready";
@@ -1008,8 +1026,60 @@ async function handleAuthApi(request, response, url) {
     sendJson(
       response,
       200,
-      { ...created.session, authEnabled: true },
+      { ...created.session, username: await authStore.currentUsername(), authEnabled: true },
       { "set-cookie": deviceCookie(created.token, { remember }) },
+    );
+    return true;
+  }
+
+  if (url.pathname === "/api/auth/credentials/change" && request.method === "POST") {
+    if (!authStore.enabled) {
+      sendJson(response, 400, { error: "Web UI 登录认证未启用" });
+      return true;
+    }
+    const authentication = await authenticateRequest(request);
+    if (authentication) requireCsrf(request, authentication);
+    const body = await readBody(request);
+    const currentUsername = String(body.currentUsername || "").slice(0, 120);
+    const currentPassword = String(body.currentPassword || "").slice(0, 4_096);
+    const rawNewUsername = String(body.newUsername ?? "").trim();
+    const rawNewPassword = String(body.newPassword ?? "");
+    if (!rawNewUsername && !rawNewPassword) throw new Error("新用户名或新密码至少填写一项");
+    const newUsername = rawNewUsername ? credentialUsername(rawNewUsername, "新用户名") : "";
+    const newPassword = rawNewPassword ? credentialPassword(rawNewPassword, "新密码") : "";
+    const limiterKey = loginRateLimitKey(request, currentUsername);
+    const retryAfter = Math.max(
+      loginRateLimiter.retryAfterSeconds(limiterKey),
+      globalLoginRateLimiter.retryAfterSeconds("instance"),
+    );
+    if (retryAfter) {
+      sendJson(response, 429, { error: `尝试过多，请在 ${retryAfter} 秒后重试` }, { "retry-after": retryAfter });
+      return true;
+    }
+    const changed = await authStore.changeCredentials({
+      currentUsername,
+      currentPassword,
+      newUsername,
+      newPassword,
+    });
+    if (!changed.ok) {
+      if (changed.reason === "unchanged") {
+        sendJson(response, 400, { error: "新用户名或新密码至少需要有一项变化" });
+        return true;
+      }
+      loginRateLimiter.recordFailure(limiterKey);
+      globalLoginRateLimiter.recordFailure("instance");
+      sendJson(response, 401, { error: "当前用户名或密码不正确" });
+      return true;
+    }
+    loginRateLimiter.reset(limiterKey);
+    globalLoginRateLimiter.reset("instance");
+    for (const client of [...sseClients.keys()]) closeSseClient(client);
+    sendJson(
+      response,
+      200,
+      { ok: true, username: changed.username, sessionsRevoked: true },
+      { "set-cookie": deviceCookie("", { clear: true }) },
     );
     return true;
   }
@@ -1022,6 +1092,7 @@ async function handleAuthApi(request, response, url) {
     }
     sendJson(response, 200, {
       ...authentication.session,
+      username: await authStore.currentUsername(),
       authenticated: true,
       authEnabled: authStore.enabled,
     });

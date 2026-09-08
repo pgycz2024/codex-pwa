@@ -1,6 +1,6 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 
 export const DEVICE_COOKIE = "codex_pwa_device";
 export const TRUSTED_DEVICE_DAYS = 90;
@@ -83,10 +83,11 @@ export class LoginRateLimiter {
 }
 
 export class TrustedDeviceStore {
-  constructor({ passwordFile = "", sessionFile = "", username = "codex" } = {}) {
+  constructor({ passwordFile = "", usernameFile = "", sessionFile = "", username = "codex" } = {}) {
     this.passwordFile = passwordFile;
+    this.usernameFile = usernameFile || (passwordFile ? join(dirname(passwordFile), "access-username") : "");
     this.sessionFile = sessionFile;
-    this.username = username;
+    this.username = String(username || "codex").trim() || "codex";
     this.queue = Promise.resolve();
   }
 
@@ -99,10 +100,24 @@ export class TrustedDeviceStore {
     return (await readFile(this.passwordFile, "utf8")).trim();
   }
 
+  async currentUsername() {
+    if (!this.enabled || !this.usernameFile) return this.username;
+    try {
+      const value = (await readFile(this.usernameFile, "utf8")).trim();
+      return value || this.username;
+    } catch (error) {
+      if (error.code === "ENOENT") return this.username;
+      throw error;
+    }
+  }
+
   async verifyCredentials(username, password) {
     if (!this.enabled) return true;
-    const expectedPassword = await this.currentPassword();
-    return safeEqual(username, this.username) && safeEqual(password, expectedPassword);
+    const [expectedUsername, expectedPassword] = await Promise.all([
+      this.currentUsername(),
+      this.currentPassword(),
+    ]);
+    return safeEqual(username, expectedUsername) && safeEqual(password, expectedPassword);
   }
 
   async passwordDigest() {
@@ -113,6 +128,39 @@ export class TrustedDeviceStore {
     const run = this.queue.then(action, action);
     this.queue = run.catch(() => {});
     return run;
+  }
+
+  async writeCredential(file, value) {
+    if (!file) throw new Error("Credential file is not configured");
+    const directory = dirname(file);
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    await chmod(directory, 0o700);
+    const temporary = `${file}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+    await writeFile(temporary, `${value}\n`, { mode: 0o600 });
+    await rename(temporary, file);
+    await chmod(file, 0o600);
+  }
+
+  async changeCredentials({ currentUsername, currentPassword, newUsername, newPassword } = {}) {
+    return this.withLock(async () => {
+      if (!this.enabled) return { ok: false, reason: "disabled" };
+      const [expectedUsername, expectedPassword] = await Promise.all([
+        this.currentUsername(),
+        this.currentPassword(),
+      ]);
+      if (!safeEqual(currentUsername, expectedUsername) || !safeEqual(currentPassword, expectedPassword)) {
+        return { ok: false, reason: "invalid" };
+      }
+      const finalUsername = String(newUsername || "").trim() || expectedUsername;
+      const finalPassword = String(newPassword || "") || expectedPassword;
+      if (safeEqual(finalUsername, expectedUsername) && safeEqual(finalPassword, expectedPassword)) {
+        return { ok: false, reason: "unchanged" };
+      }
+      await this.writeCredential(this.usernameFile, finalUsername);
+      await this.writeCredential(this.passwordFile, finalPassword);
+      await this.writeState({ version: 2, sessions: [] });
+      return { ok: true, username: finalUsername };
+    });
   }
 
   async readState() {

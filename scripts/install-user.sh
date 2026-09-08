@@ -200,12 +200,17 @@ umask 077
 mkdir -p -- "$config_dir" "$unit_dir"
 chmod 700 "$config_dir" "$unit_dir"
 password_file="$config_dir/access-password"
+username_file="$config_dir/access-username"
 session_file="$config_dir/trusted-devices.json"
 created_password=""
 if [[ ! -s "$password_file" ]]; then
   created_password=$($node_bin -e 'process.stdout.write(require("node:crypto").randomBytes(12).toString("base64url"))')
   printf '%s\n' "$created_password" >"$password_file"
   chmod 600 "$password_file"
+fi
+if [[ ! -s "$username_file" ]]; then
+  printf 'codex\n' >"$username_file"
+  chmod 600 "$username_file"
 fi
 
 env_value() {
@@ -233,6 +238,7 @@ env_file="$config_dir/codex-pwa.env"
   printf 'CODEX_PWA_APP_SERVER_MODE=%s\n' "$(env_value 'shared-daemon')"
   printf 'CODEX_PWA_DAEMON_SOCKET=%s\n' "$(env_value "$daemon_socket")"
   printf 'CODEX_PWA_PASSWORD_FILE=%s\n' "$(env_value "$password_file")"
+  printf 'CODEX_PWA_USERNAME_FILE=%s\n' "$(env_value "$username_file")"
   printf 'CODEX_PWA_SESSION_FILE=%s\n' "$(env_value "$session_file")"
   printf 'CODEX_PWA_INSTANCE_NAME=%s\n' "$(env_value "$instance_name")"
   printf 'CODEX_PWA_PRIVATE_IP=%s\n' "$(env_value "$private_ip")"
@@ -345,7 +351,8 @@ else
   printf 'Loopback URL: http://127.0.0.1:%s\n' "$port"
   printf 'Use an SSH tunnel or configure a private-network listener later.\n'
 fi
-printf 'Login username: codex\n'
+login_username=$(tr -d '\r\n' <"$username_file")
+printf 'Login username: %s\n' "$login_username"
 if [[ -n "$created_password" ]]; then
   printf 'Initial password: %s\n' "$created_password"
   printf 'Save it now. It is stored only in %s\n' "$password_file"

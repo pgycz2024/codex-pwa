@@ -23,7 +23,7 @@ systemctl --user reset-failed codex-pwa.service codex-pwa-private.socket codex-p
   codex-pwa-pgy.socket codex-pwa-pgy.service 2>/dev/null || true
 
 if [[ "$purge" == "1" ]]; then
-  rm -f -- "$config_dir/codex-pwa.env" "$config_dir/access-password" "$config_dir/trusted-devices.json"
+  rm -f -- "$config_dir/codex-pwa.env" "$config_dir/access-password" "$config_dir/access-username" "$config_dir/trusted-devices.json"
   rmdir "$config_dir" 2>/dev/null || true
   printf 'PWA services and local PWA credentials were removed.\n'
 else

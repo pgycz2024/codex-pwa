@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.9`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.10`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -33,6 +33,8 @@
 `v0.18.8` 修复 GitHub Actions 中移动端浏览器启动竞态与 Node.js 工具链路径差异，使发布前检查可在 GitHub 托管运行器稳定复现；同时支持通过隔离的干净镜像和仓库专用 Deploy Key 原子推送版本，标签测试通过后自动创建 GitHub Release。
 
 `v0.18.9` 延长 GitHub 托管运行器的 Chrome 启动等待，在 CI 中启用兼容启动参数，并在浏览器提前退出或超时时保留诊断信息。
+
+`v0.18.10` 增加用户名或密码修改入口。修改前需要验证旧凭据，成功后会撤销所有可信设备并要求重新登录；旧部署继续使用默认用户名 `codex`，直到主动修改。
 
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
@@ -72,6 +74,7 @@ npm run setup
 - 检测 `oray_vnc` 蒲公英 IP；
 - 让 Node 服务继续只监听 `127.0.0.1`，再用 systemd socket proxy 仅在私网 IP 暴露所选端口；
 - 生成独立的 Web UI 密码；
+- 支持在登录页或“已登录设备管理”中修改用户名和密码；
 - 启动服务并执行 HTTP 健康检查。
 
 安装结束会显示手机网址、登录用户名 `codex` 和首次密码。
@@ -162,6 +165,7 @@ bash scripts/uninstall-user.sh
 - `CODEX_PWA_APP_SERVER_MODE`：共享持久 daemon 时使用 `shared-daemon`
 - `CODEX_PWA_DAEMON_SOCKET`：该用户自己的 app-server control socket
 - `CODEX_PWA_PASSWORD_FILE`：Web UI 登录密码文件
+- `CODEX_PWA_USERNAME_FILE`：Web UI 登录用户名文件，默认与密码文件同目录的 `access-username`
 - `CODEX_PWA_SESSION_FILE`：可信设备记录
 - `CODEX_PWA_INSTANCE_NAME`：侧栏显示的实例名称
 - `CODEX_PWA_NETWORK_LABEL`：侧栏显示的网络入口说明
@@ -230,5 +234,6 @@ PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 O
 - `v0.18.7`：保留未列入模型目录的任务模型，并兼容新版任务设置响应
 - `v0.18.8`：修复 GitHub Actions 环境差异，并加入隔离镜像自动发布链路
 - `v0.18.9`：增强 GitHub Actions 中 Chrome 启动的兼容性与可诊断性
+- `v0.18.10`：增加需验证旧凭据的用户名或密码修改入口，并在修改后撤销全部可信设备
 
 Git 发布可使用版本标签。ZIP 更新会保留最近三份可恢复的旧程序目录。出现问题时只需恢复程序目录并重启该用户自己的 `codex-pwa.service`；不需要重启 Linux、共享 Codex daemon 或其他用户的任务。

@@ -59,7 +59,7 @@ test("package, server, and documentation share one application version", async (
     readFile(new URL("../server.mjs", import.meta.url), "utf8"),
     readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
-  assert.equal(manifest.version, "0.18.9");
+  assert.equal(manifest.version, "0.18.10");
   assert.match(server, /APP_VERSION = JSON\.parse\(readFileSync\(join\(here, "package\.json"\)/);
   assert.doesNotMatch(server, /APP_VERSION = "\d+\.\d+\.\d+"/);
   assert.ok(readme.includes(`当前版本为 \`${manifest.version}\``));
@@ -852,6 +852,97 @@ test("trusted-device login protects APIs, enforces CSRF, and invalidates session
   assert.match(response.headers.get("set-cookie"), /Max-Age=0/);
   response = await fetch(`${base}/api/auth/session`, { headers: { cookie: replacementCookie } });
   assert.equal(response.status, 401);
+
+  response = await fetch(`${base}/api/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username: "codex", password: "replacement-secret", remember: true }),
+  });
+  const credentialLogin = await response.json();
+  const credentialCookie = response.headers.get("set-cookie").split(";", 1)[0];
+  assert.equal(response.status, 200);
+  response = await fetch(`${base}/api/auth/credentials/change`, {
+    method: "POST",
+    headers: { cookie: credentialCookie, "content-type": "application/json" },
+    body: JSON.stringify({
+      currentUsername: "codex",
+      currentPassword: "replacement-secret",
+      newUsername: "researcher",
+      newPassword: "final-secret",
+    }),
+  });
+  assert.equal(response.status, 403);
+  response = await fetch(`${base}/api/auth/credentials/change`, {
+    method: "POST",
+    headers: {
+      cookie: credentialCookie,
+      "content-type": "application/json",
+      "X-Codex-PWA-CSRF": credentialLogin.csrfToken,
+    },
+    body: JSON.stringify({
+      currentUsername: "codex",
+      currentPassword: "wrong-secret",
+      newUsername: "researcher",
+      newPassword: "final-secret",
+    }),
+  });
+  assert.equal(response.status, 401);
+  response = await fetch(`${base}/api/auth/credentials/change`, {
+    method: "POST",
+    headers: {
+      cookie: credentialCookie,
+      "content-type": "application/json",
+      "X-Codex-PWA-CSRF": credentialLogin.csrfToken,
+    },
+    body: JSON.stringify({
+      currentUsername: "codex",
+      currentPassword: "replacement-secret",
+      newUsername: "researcher",
+      newPassword: "final-secret",
+    }),
+  });
+  const changedCredentials = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(changedCredentials.username, "researcher");
+  assert.equal(changedCredentials.sessionsRevoked, true);
+  assert.match(response.headers.get("set-cookie"), /Max-Age=0/);
+  response = await fetch(`${base}/api/auth/session`, { headers: { cookie: credentialCookie } });
+  assert.equal(response.status, 401);
+  response = await fetch(`${base}/api/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username: "codex", password: "final-secret", remember: true }),
+  });
+  assert.equal(response.status, 401);
+  response = await fetch(`${base}/api/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username: "researcher", password: "final-secret", remember: true }),
+  });
+  assert.equal(response.status, 200);
+  response = await fetch(`${base}/api/auth/credentials/change`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      currentUsername: "researcher",
+      currentPassword: "final-secret",
+      newUsername: "public-user",
+      newPassword: "public-secret",
+    }),
+  });
+  assert.equal(response.status, 200);
+  response = await fetch(`${base}/api/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username: "researcher", password: "public-secret", remember: true }),
+  });
+  assert.equal(response.status, 401);
+  response = await fetch(`${base}/api/auth/login`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ username: "public-user", password: "public-secret", remember: true }),
+  });
+  assert.equal(response.status, 200);
 });
 
 test("directory picker exposes mobile browsing, filtering, and creation controls", async () => {
@@ -911,10 +1002,11 @@ test("V2 interface exposes the core mobile task controls", async () => {
     "loadMoreHistoryButton", "loadCompleteHistoryButton", "historyNodesButton", "releaseThreadButton",
     "attachButton", "fileInput", "photoInput", "attachmentTray", "newAttachButton", "newFileInput",
     "newPhotoInput", "newAttachmentTray", "attachmentSourceDialog", "choosePhotoButton", "chooseFileButton",
-    "authGate", "loginForm", "rememberDevice", "logoutButton", "logoutAllButton", "refreshWebUiButton",
+    "authGate", "loginForm", "rememberDevice", "changeCredentialsLoginButton", "logoutButton", "logoutAllButton", "refreshWebUiButton",
     "newPermissionSelect", "settingsPermissionSelect",
     "serverFilesButton", "fileBrowserDialog", "fileBrowserSearch", "showHiddenFiles",
-    "trustedDevicesButton", "devicesDialog", "devicesList", "logoutOtherDevicesButton",
+    "trustedDevicesButton", "devicesDialog", "devicesList", "logoutOtherDevicesButton", "changeCredentialsButton",
+    "credentialsDialog", "credentialsForm", "currentUsernameInput", "currentPasswordInput", "newUsernameInput", "newPasswordInput", "confirmNewPasswordInput",
     "threadActionDialog", "actionPinThreadButton", "actionRenameThreadButton", "actionCopyThreadIdButton", "actionArchiveThreadButton",
     "goalBar", "helpButton", "helpDialog", "askWebUiButton", "requestUiChangeButton",
     "historyNodesDialog", "historyNodesSearch", "historyNodesList", "historyNodesLoadMoreButton", "historyNodesLoadAllButton",
@@ -1140,15 +1232,18 @@ test("browser authentication uses trusted-device cookies and CSRF without native
     readFile(new URL("../public/sw.js", import.meta.url), "utf8"),
   ]);
   assert.match(server, /\/api\/auth\/login/);
+  assert.match(server, /\/api\/auth\/credentials\/change/);
   assert.match(server, /\/api\/auth\/logout-all/);
   assert.match(server, /x-codex-pwa-csrf/);
   assert.doesNotMatch(server, /www-authenticate/);
   assert.match(app, /X-Codex-PWA-CSRF/);
   assert.match(app, /\/api\/auth\/session/);
+  assert.match(app, /\/api\/auth\/credentials\/change/);
   assert.match(app, /!state\.auth\.authenticated \|\| document\.visibilityState === "hidden"/);
   assert.match(server, /globalLoginRateLimiter/);
   assert.match(server, /loginRateLimitKey/);
   assert.match(html, /记住此设备 90 天/);
+  assert.match(html, /修改用户名或密码/);
   assert.match(worker, /pathname\.startsWith\("\/api\/"\)/);
 });
 
@@ -1267,6 +1362,7 @@ test("per-user installer generates isolated roots, daemon socket, port, and priv
   assert.match(config, /CODEX_PWA_PORT="4266"/);
   assert.match(config, new RegExp(`CODEX_HOME="${home.replaceAll("/", "\\/")}\\/.codex"`));
   assert.match(config, /CODEX_PWA_APP_SERVER_MODE="shared-daemon"/);
+  assert.match(config, /CODEX_PWA_USERNAME_FILE=/);
   assert.match(config, /CODEX_PWA_INSTANCE_NAME="researcher 的 Codex"/);
   assert.match(config, /CODEX_PWA_PRIVATE_IP="172\.16\.2\.99"/);
   assert.match(config, /CODEX_PWA_LOOPBACK_ONLY="0"/);
@@ -1285,6 +1381,8 @@ test("per-user installer generates isolated roots, daemon socket, port, and priv
   assert.match(socket, /FreeBind=true/);
   assert.match(proxy, /127\.0\.0\.1:4266/);
   assert.equal((await stat(join(home, ".config", "codex-pwa", "access-password"))).mode & 0o777, 0o600);
+  assert.equal((await stat(join(home, ".config", "codex-pwa", "access-username"))).mode & 0o777, 0o600);
+  assert.equal((await readFile(join(home, ".config", "codex-pwa", "access-username"), "utf8")).trim(), "codex");
 
   const reinstall = spawn("bash", ["scripts/install-user.sh", "--dry-run", "--yes"], {
     cwd: projectDirectory,
