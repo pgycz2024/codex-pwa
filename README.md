@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.10`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.11`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -35,6 +35,8 @@
 `v0.18.9` 延长 GitHub 托管运行器的 Chrome 启动等待，在 CI 中启用兼容启动参数，并在浏览器提前退出或超时时保留诊断信息。
 
 `v0.18.10` 增加用户名或密码修改入口。修改前需要验证旧凭据，成功后会撤销所有可信设备并要求重新登录；旧部署继续使用默认用户名 `codex`，直到主动修改。
+
+`v0.18.11` 递增 Service Worker 缓存版本，确保已经安装的 PWA 能取得最新资源。
 
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
@@ -235,5 +237,6 @@ PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 O
 - `v0.18.8`：修复 GitHub Actions 环境差异，并加入隔离镜像自动发布链路
 - `v0.18.9`：增强 GitHub Actions 中 Chrome 启动的兼容性与可诊断性
 - `v0.18.10`：增加需验证旧凭据的用户名或密码修改入口，并在修改后撤销全部可信设备
+- `v0.18.11`：递增 PWA 缓存版本，确保已安装客户端及时更新资源
 
 Git 发布可使用版本标签。ZIP 更新会保留最近三份可恢复的旧程序目录。出现问题时只需恢复程序目录并重启该用户自己的 `codex-pwa.service`；不需要重启 Linux、共享 Codex daemon 或其他用户的任务。

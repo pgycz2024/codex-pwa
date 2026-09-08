@@ -59,7 +59,7 @@ test("package, server, and documentation share one application version", async (
     readFile(new URL("../server.mjs", import.meta.url), "utf8"),
     readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
-  assert.equal(manifest.version, "0.18.10");
+  assert.equal(manifest.version, "0.18.11");
   assert.match(server, /APP_VERSION = JSON\.parse\(readFileSync\(join\(here, "package\.json"\)/);
   assert.doesNotMatch(server, /APP_VERSION = "\d+\.\d+\.\d+"/);
   assert.ok(readme.includes(`当前版本为 \`${manifest.version}\``));
@@ -1132,7 +1132,7 @@ test("sidebar utility menu is a unified 3x2 layout with inline connection status
   assert.match(css, /\.directory-current code\s*\{[^}]*direction:\s*rtl[^}]*text-align:\s*left/);
   assert.match(app, /refreshWebUiButton\.addEventListener/);
   assert.match(app, /registration\.waiting\.postMessage\(\{ type: "SKIP_WAITING" \}\)/);
-  assert.match(worker, /codex-pwa-v49/);
+  assert.match(worker, /codex-pwa-v50/);
 });
 
 test("conversation list separates recent, all-history, and archived sessions", async () => {
@@ -1523,7 +1523,7 @@ test("Goal state, confirmation actions, and top-level task menus are wired", asy
   assert.match(app, /正在保存 Goal/);
   assert.match(app, /加载中……/);
   assert.match(app, /historyNodesList\.setAttribute\("aria-busy"/);
-  assert.match(worker, /codex-pwa-v49/);
+  assert.match(worker, /codex-pwa-v50/);
 });
 
 test("history pages are normalized to chronological order", () => {

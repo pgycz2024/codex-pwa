@@ -2,9 +2,9 @@
 6f51a88964819ce5ae22e5446dd0059858494c69948ccfec2d33f7cc55e837d1  ./.github/workflows/check.yml
 8b1e7e26a978c6218f75cb521a0c2258a5947d38c20028e171885c28fb76c949  ./.github/workflows/release.yml
 d8b52d27b70ac724ebbacc556b36e3ff78cb17f6e600936d764755345301e032  ./.gitignore
-30545252f306b93b945843875f59269d12cda14dcdbc34ab806c529b213b5d00  ./CHANGELOG.md
+75d42ad84c3a45ef6cbdd26b9b20a436fb44c886246a117fbd5fd60f108058ae  ./CHANGELOG.md
 393fb7f844b8ff533de2f2856d7c7b9be3e4ed478f209500d760dc359b109e61  ./LICENSE
-c8b1f01a04213a5a34c76867da8d0b726d3775c878c297e7419399981e91c6a2  ./README.md
+d71d0d301d9dc74f67ea90a8acb576ce9ff96150d32985d2b9d4bf22b8ada65a  ./README.md
 c751f4d667c7894f7b9180ae58ac08a7ce4a7f64fedfeb8bfcfafaec6ff9534c  ./SECURITY.md
 e7d4bd854761ffb245cf4788bf07f08530b83ecd1c0928b38b4d3b7241534461  ./artifact-store.mjs
 307375a08d29df25f03170ee43630f03b483d6a637d9b6d854ded161f69b4ed1  ./auth-store.mjs
@@ -12,8 +12,8 @@ a0bfb0e49ea939cb12ad7be0e932df9f59946efd83fd42d1328ff7178bb0f566  ./directory-ut
 194c228066b0f04f078c3a6ef01c8cb6cac0af9a0649d1ab6314670c09b161f9  ./docs/PUBLISHING.md
 0cb6fe8d9904d2a0acb2133e28019d146e571853a29cb2049d5f2a5894df42d0  ./docs/TEAM_DEPLOYMENT.md
 1c1473ae0a7800853ee073f70967947dca4cccb27da29b2c1756a84fdfdfdaef  ./file-access.mjs
-fed1f4e4fb8f65f2b2fb5b033b13f37ab9b9b364ee4616ec04ee22d5c6544439  ./package-lock.json
-033521ff4bd407269c75fd122994ef198c94adfac6e7b08d8a073d6339b451ca  ./package.json
+b84807c7e8586487a55c2c8fe7ef9dd562f096cc01d5dd216d3ab3b277f26c98  ./package-lock.json
+50e581b80f7ffe708bc00d9e176ddc512ba6ae644b6b33b774f3245d38de5b1f  ./package.json
 00b520ba091af86afcb231adbc3618550859cc2a2ff661536413320d2f5b2c41  ./public/app.js
 81f7b01bf931010674cd4a080360979a101ce09e4e89cf449d415c1c07fbe03b  ./public/file-links.js
 ce5d5b2b3f47d1cabe3bf2f5f92fa5b2811d5b4bd1632cb2532c2ba5d8e5b907  ./public/file-preview.css
@@ -30,7 +30,7 @@ a3dfff76de8b108bec90e24c4f6545e1967d7fff820b6e7d0de1d45fc5bff312  ./public/messa
 f7033a7f6b25f76988eeccb2dd966e9423841bfa4b37bd9298da4506353e6f41  ./public/model-display.js
 847552fe3d3a4ff8b58cab8a2df47e6aaa85015fb98460597bc6d0e1bcd0b5ac  ./public/storage-utils.js
 f37a57dae2f561a35112f06331405ed068dcc01400cbbb5f0699fb0d3855edd3  ./public/styles.css
-2085ca53833dc4f45f6bbf959385284e85ae0984b22e89e930104a88c2321e26  ./public/sw.js
+004b40b0a4b5aed160af57dfaf2edc5e3055f457e928c10b45acde1ad169016d  ./public/sw.js
 0206747cdb898dfbff34b28b58821bf9d8306e9d015813c985bea75e549e196e  ./public/upload-utils.js
 a0cc5bd305f5159531963552011070ef84d2d9d39712d2ba8d0ac76f1c604da7  ./public/virtual-list.js
 241f55c6a84a4edee58014d92f79e7c7fdfae2aec15bc2ff919b40e1b07f7050  ./scripts/doctor.sh
@@ -45,8 +45,8 @@ fcfb59b31b670ff77e9a045b63279c3ad09f55d5f0876fa361378dae7cdf610c  ./scripts/inst
 8bfc4fab9d0cd5a143f127ab7dc6312d325d56226543b96433656ff1b861ffd5  ./systemd/codex-pwa-private.service.in
 f5f66b8662427919a71893c8c8d7a60a6f1885a8cb10978e9622cc9d6fcd1928  ./systemd/codex-pwa-private.socket.in
 16f650acde765803828ac8d4a42190006263e657efb42f76a07c353b35b68ca8  ./systemd/codex-pwa.service
-7a42e19926a9105cff831f8ad7e2b621c47f55748a5ecaf1f86757d2b28e7f56  ./test/mobile-browser.test.mjs
-e7ee5694529e98a90963ba400cf3aa2efbe3cd2e7cfc304d7b0186ade1d2fd45  ./test/server-static.test.mjs
+9f2bef1e67363fd919360424c550fd24087adf8eead798f31e8f6a2d53dad5f0  ./test/mobile-browser.test.mjs
+f390fdadd4865c6d5982c7ab1656ab5a975302292ca6af406959614f7796ddc8  ./test/server-static.test.mjs
 18be48444dc28e441b91a3fb9da451f73105fc616e18ca3b2ed8392bf40ec5c3  ./thread-history.mjs
 ea0fa05ce162e2d10488b37d3edc4cd9bfc607a31c9b029272b3f2423db5db25  ./thread-settings.mjs
 38b38000750d00e0b66c000f4fac8f5aaeba0b5111a935d373f1ea0d61a91a30  ./upload-utils.mjs
