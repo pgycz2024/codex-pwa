@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.12`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.13`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -40,6 +40,8 @@
 
 `v0.18.12` 完善公开仓库、AI 辅助安装、多人隔离和私网排障说明。
 
+`v0.18.13` 进一步完善 API Key 认证说明、任意安装目录下的维护流程、Release 校验、服务排障、HTTPS/SSE 反向代理和跨端活动写入者说明。
+
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
 ## 最重要的部署原则
@@ -56,7 +58,7 @@
 
 ## 安装
 
-前提：Linux 账号中已经安装 Node.js 22+、npm 和 Codex CLI，并已完成 `codex login`。
+前提：目标 Linux 账号中已经安装 Node.js 22+、npm 和 Codex CLI，并已完成该账号自己的 `codex login`。PWA 直接复用当前账号的 Codex CLI 认证；API Key 登录（例如 `codex login --with-api-key`）和 ChatGPT 登录都由 Codex CLI 自己管理，PWA 不会替换或上传这些凭据。使用 ZIP 还需要 `unzip`，使用 Git 克隆还需要 `git`。
 
 干净 ZIP 分发包可以解压到该 Linux 用户有写权限的任意目录：
 
@@ -74,7 +76,7 @@ cd codex-pwa
 npm run setup
 ```
 
-公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.12 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
+公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.13 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
 
 安装程序会自动：
 
@@ -92,6 +94,8 @@ npm run setup
 安装结束会显示手机网址、登录用户名 `codex` 和首次密码。
 
 第一次安装最好在该用户没有正在运行的 Codex 任务时进行，因为安装程序需要建立该用户自己的持久 daemon。已有特殊 daemon 配置的用户可以使用 `--skip-daemon-bootstrap`。
+
+安装器的常用选项：`--root PATH` 限制文件管理器和任务工作目录（默认是当前用户的 home，多个根目录用冒号分隔；管理员应只指定该账号确实获授权的目录）；`--private-ip IP` 手动指定蒲公英地址；`--port PORT` 固定端口；`--loopback-only` 只提供本机访问；`--skip-daemon-bootstrap` 复用已经由管理员准备好的该用户 daemon；`--dry-run` 只生成配置、不安装依赖或启动服务。首次在共享服务器上部署时，建议先用 `--dry-run` 检查目录和参数格式，再执行正式安装。
 
 ### 让 AI 协助安装
 
@@ -141,6 +145,8 @@ sudo loginctl enable-linger USERNAME
 - 深色/浅色外观；在 HTTPS 或 localhost 下支持完整 PWA 安装和离线外壳
 - 与同一 Linux 用户的 Windows Codex Remote 共享持久 daemon
 
+手机 Web UI 和 Windows Codex Remote 可以共享同一 Linux 用户的持久 daemon 和任务历史，但 Codex 对同一个任务仍只允许一个活动写入者。不要在两个客户端同时发送消息、审批或中止同一轮任务；切换客户端前先等待写入完成并关闭上一端的任务视图。若出现“已有 active writer”，先完全关闭上一端对应任务，等待几秒后刷新再重试，长时间运行的任务不要为了切换客户端而重启服务器或 daemon。
+
 ## 日常命令
 
 诊断：
@@ -148,6 +154,21 @@ sudo loginctl enable-linger USERNAME
 ```bash
 npm run doctor
 ```
+
+查看当前用户自己的服务和日志（这些命令不会重启 Linux 服务器或其他用户的服务）：
+
+```bash
+systemctl --user status codex-pwa.service codex-pwa-private.socket
+journalctl --user -u codex-pwa.service -u codex-pwa-private.service --since "1 hour ago"
+```
+
+默认安装使用 `shared-daemon`，只重启当前用户的 Web UI 不会重启 Codex daemon 或其中的任务（手动改成 `isolated` 模式时，不要在任务运行中重启）：
+
+```bash
+systemctl --user restart codex-pwa.service
+```
+
+若私网入口仍不可访问，再检查 `systemctl --user status codex-pwa-private.socket`；不要重启服务器或共享 Codex daemon。
 
 更新：
 
@@ -187,7 +208,7 @@ bash scripts/uninstall-user.sh
 
 - `CODEX_PWA_HOST`：Node 服务监听地址，推荐保持 `127.0.0.1`
 - `CODEX_PWA_PORT`：该用户的独立端口
-- `CODEX_PWA_ROOTS`：允许访问的绝对目录；多个目录用冒号分隔
+- `CODEX_PWA_ROOTS`：允许访问的绝对目录；多个目录用冒号分隔（目录名本身不要包含冒号）
 - `CODEX_BIN`：该用户的 Codex CLI 路径
 - `CODEX_HOME`：该用户的 Codex 数据目录
 - `CODEX_PWA_APP_SERVER_MODE`：共享持久 daemon 时使用 `shared-daemon`
@@ -214,9 +235,11 @@ npm run setup -- --loopback-only
 
 这种模式仅监听 `127.0.0.1`，需要 SSH 隧道或由管理员配置受信任的 HTTPS 反向代理。不要把 PWA 或未认证的 app-server socket 直接暴露到公网。
 
-普通蒲公英 IP 上的 `http://` 页面可正常远程控制和断线自动重连，也可以创建桌面网页快捷方式；但远程 HTTP 通常不能注册 Service Worker，因此不等同于完整的离线 PWA。完整安装和离线外壳需要手机信任的 HTTPS 入口。
+普通蒲公英 IP 上的 `http://` 页面可正常远程控制和断线自动重连，也可以创建桌面网页快捷方式；但远程 HTTP 通常不能注册 Service Worker，因此不等同于完整的离线 PWA，而且流量没有 HTTPS 加密。完整安装和离线外壳需要手机信任的 HTTPS 入口。
 
 安装器会给 Web UI 进程设置 `MemoryHigh=768M` 和 `MemoryMax=1G`，避免异常超长历史或损坏数据无上限占用服务器内存。共享 Codex daemon 运行在独立服务中，不受这个 Web UI 限额影响。
+
+如果管理员使用 HTTPS 反向代理，代理必须把普通 HTTP 请求转发到本用户的 `127.0.0.1:CODEX_PWA_PORT`，允许 `/api/events` 的 SSE 长连接并关闭响应缓冲、避免短超时；不要把 Unix socket 或 app-server 端口直接暴露给手机或公网。
 
 ## 开发与测试
 
@@ -225,7 +248,7 @@ npm ci
 npm run check
 ```
 
-当前协议兼容基线来自 Codex CLI/app-server `0.148.0`，当前完整回归与生成协议校验使用 `0.153.2`。任务恢复会优先采用新版轻量分页方式，并为旧版参数保留兼容回退。升级 Codex 后应先运行 `npm run doctor` 和 `npm run check`；Goal 等实验接口在不受支持时会自动降级。
+当前协议兼容基线来自 Codex CLI/app-server `0.148.0`，完整回归与生成协议校验曾使用 `0.153.2`。这两个版本号是已验证基线，不是对未来 CLI 的锁定要求；升级 Codex 后应先运行 `npm run doctor` 和 `npm run check`，并在出现异常时保留 `journalctl --user` 日志。任务恢复会优先采用新版轻量分页方式，并为旧版参数保留兼容回退；Goal 等实验接口在不受支持时会自动降级。
 
 所有源代码采用 MIT License。`npm run release:local` 会生成不含开发历史、凭据、任务和依赖目录的干净 ZIP，以及从已清洗快照重新初始化的单提交 Git bundle。不要直接分享现有工作仓库、其 `.git` 目录或由该开发仓库直接导出的 bundle。
 
@@ -271,5 +294,6 @@ PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 O
 - `v0.18.10`：增加需验证旧凭据的用户名或密码修改入口，并在修改后撤销全部可信设备
 - `v0.18.11`：递增 PWA 缓存版本，确保已安装客户端及时更新资源
 - `v0.18.12`：完善公开仓库、AI 辅助部署和多人隔离文档
+- `v0.18.13`：补充认证、安装目录、校验、排障、HTTPS/SSE 和跨端并发说明
 
 Git 发布可使用版本标签。ZIP 更新会保留最近三份可恢复的旧程序目录。出现问题时只需恢复程序目录并重启该用户自己的 `codex-pwa.service`；不需要重启 Linux、共享 Codex daemon 或其他用户的任务。

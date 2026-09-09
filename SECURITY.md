@@ -10,6 +10,7 @@ Codex PWA can execute commands and expose files with the permissions of the Linu
 - Keep `CODEX_PWA_ROOTS` limited to directories that belong to that user.
 - Use a separate high TCP port for each user's private-network listener.
 - Enable systemd linger only for the intended Linux account.
+- Treat a private-network `http://` URL as reachable only by network membership, not as encrypted transport; use a trusted HTTPS reverse proxy when the network itself is not fully trusted.
 
 ## Files that must never be committed
 
@@ -36,6 +37,10 @@ The public GitHub repository contains only the sanitized application source, doc
 Each user's real security boundary is still the Linux account, file permissions, Codex credentials, private-network membership, PWA login credentials, and allowed root. A public repository must never be treated as a replacement for those controls.
 
 The installer stores PWA configuration under `~/.config/codex-pwa` with restrictive permissions. Changing the PWA password invalidates previously trusted devices.
+
+The PWA reuses the current Linux user's Codex CLI authentication, including API Key mode. Do not copy `~/.codex/auth.json`, API keys, rollout files, task transcripts, or PWA logs into an issue, ZIP, Git repository, or chat. A browser session is a convenience layer, not a second Linux permission boundary: anyone who obtains both private-network access and the PWA credentials can act with that Linux account's permissions.
+
+When an HTTPS reverse proxy is used, it must preserve authentication headers/cookies and forward `/api/events` as an unbuffered long-lived SSE response. A proxy that buffers or times out this endpoint can cause stale task output and repeated reconnects, but does not change the underlying Codex task state.
 
 ## Reporting
 

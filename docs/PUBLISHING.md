@@ -70,7 +70,7 @@ git config user.email "YOUR_GITHUB_NOREPLY_EMAIL"
 
 ## 四、从 Windows 上传到 GitHub
 
-1. 在 GitHub 网页新建一个空的 **Private** repository，例如 `codex-pwa`；
+1. 在 GitHub 网页新建一个空的 **Private** repository，例如 `codex-pwa`（这是维护者的内部仓库；组员使用的公开仓库应由清洗镜像单独生成）；
 2. 不要让 GitHub 自动生成 README、`.gitignore` 或 License；
 3. 在 Windows 项目目录中把 bundle 的本地地址换成 GitHub 地址；
 4. 推送 `main` 和版本标签。
@@ -85,7 +85,7 @@ git push origin vX.Y.Z
 
 Windows 的 Git Credential Manager 或 VS Code 会使用 Windows 上的 GitHub 登录。服务器不会接触这些凭据。
 
-也可以在 VS Code 中打开 `codex-pwa` 文件夹，通过“源代码管理”界面发布分支。上传后在 GitHub 的 Releases 页面为 `vX.Y.Z` 创建 Release，并附加 ZIP 与 `SHA256SUMS` 文件。
+也可以在 VS Code 中打开 `codex-pwa` 文件夹，通过“源代码管理”界面发布分支。推送版本标签后，仓库的 GitHub Actions 会重新运行检查，并自动创建包含 ZIP、clean Git bundle 和 `SHA256SUMS` 的 Release；不要在工作流成功前手动创建同名 Release。若工作流被禁用，才需要在 Releases 页面手动附加这些文件。
 
 ## 五、组员安装
 
@@ -105,7 +105,7 @@ cd codex-pwa
 npm run setup
 ```
 
-公开仓库无需 GitHub 凭据；不要在共享服务器保存能够访问多个私人仓库的个人 SSH Key。内部私有仓库如确需直接克隆，仍应只配置限定到单一仓库的只读 Deploy Key。
+公开仓库无需 GitHub 凭据；下载 Release 后应按 [组内部署说明](TEAM_DEPLOYMENT.md) 验证 `SHA256SUMS`。不要在共享服务器保存能够访问多个私人仓库的个人 SSH Key。内部私有仓库如确需直接克隆，仍应只配置限定到单一仓库的只读 Deploy Key。
 
 ## 六、可选：仓库专用 Deploy Key 自动发布
 

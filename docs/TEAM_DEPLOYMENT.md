@@ -8,7 +8,7 @@
 
 1. 确保每位同学有独立的 Linux 账号和 home 目录。
 2. 将同学的手机加入同一个蒲公英私网。
-3. 确保每位同学能在自己的账号中运行 Node.js 22、npm 和 Codex CLI。
+3. 确保每位同学能在自己的账号中运行 Node.js 22、npm 和 Codex CLI，并在该账号中完成自己的 `codex login`。PWA 会复用 Codex CLI 当前认证，包括 API Key 登录；不会替用户登录 ChatGPT 或上传凭据。
 4. 如果希望退出 SSH 后服务仍持续运行，为该账号启用 systemd linger：
 
    ```bash
@@ -37,7 +37,15 @@ cd codex-pwa
 npm run setup
 ```
 
-需要固定版本时，可使用 `git clone --branch v0.18.12 --depth 1 https://github.com/pgycz2024/codex-pwa.git`，或从 GitHub Releases 下载同名版本的 ZIP。仓库克隆不需要 GitHub 登录。
+需要固定版本时，可使用 `git clone --branch v0.18.13 --depth 1 https://github.com/pgycz2024/codex-pwa.git`，或从 GitHub Releases 下载同名版本的 ZIP。仓库克隆不需要 GitHub 登录。
+
+从 Release ZIP 安装前可在同一目录验证完整性：
+
+```bash
+sha256sum --ignore-missing -c SHA256SUMS-vX.Y.Z.txt
+```
+
+如果只下载 ZIP，`--ignore-missing` 会跳过尚未下载的 Git bundle；ZIP 对应条目必须显示 `OK`。如果同时下载了 ZIP 和 bundle，两个条目都应显示 `OK`；校验失败时不要解压或执行其中的安装脚本。
 
 安装脚本会：
 
@@ -53,7 +61,7 @@ npm run setup
 
 安装结束会打印手机访问网址、用户名 `codex` 和首次密码。首次登录后可记住设备 90 天；也可以在登录页或“已登录设备管理”中修改用户名和密码。修改成功后所有设备都需要重新登录。
 
-安装器会在 `4177–4277` 中选择空闲端口，并输出类似 `http://蒲公英IP:4178` 的网址。每位用户的端口、密码和文件根目录都不同，因此手机必须打开自己那一行网址。若自动检测不到蒲公英 IP，可以使用 `npm run setup -- --private-ip SERVER_PRIVATE_IP`；端口冲突时使用 `npm run setup -- --port PORT`。
+安装器会在 `4177–4277` 中选择空闲端口，并输出类似 `http://蒲公英IP:4178` 的网址。每位用户的端口、密码和文件根目录都不同，因此手机必须打开自己那一行网址。若自动检测不到蒲公英 IP，可以使用 `npm run setup -- --private-ip SERVER_PRIVATE_IP`；端口冲突时使用 `npm run setup -- --port PORT`。需要限制文件访问范围时使用 `npm run setup -- --root /absolute/authorized/path`，只指定该账号获授权的目录；如果想先只检查配置而不启动服务，可执行 `npm run setup -- --dry-run`。
 
 ### 给 AI 的执行边界
 
@@ -64,14 +72,14 @@ npm run setup
 检查状态：
 
 ```bash
-cd ~/codex-pwa
+cd /path/to/your/codex-pwa
 npm run doctor
 ```
 
 更新：
 
 ```bash
-cd ~/codex-pwa
+cd /path/to/your/codex-pwa
 bash scripts/update-user.sh
 ```
 
@@ -85,7 +93,7 @@ bash scripts/update-user.sh --zip /path/to/new/codex-pwa-vX.Y.Z.zip
 修改 Web UI 密码：
 
 ```bash
-cd ~/codex-pwa
+cd /path/to/your/codex-pwa
 bash scripts/set-password.sh
 ```
 
@@ -94,18 +102,27 @@ bash scripts/set-password.sh
 卸载 PWA 服务但保留凭据和任务：
 
 ```bash
-cd ~/codex-pwa
+cd /path/to/your/codex-pwa
 bash scripts/uninstall-user.sh
 ```
 
 卸载 PWA 服务并删除 PWA 密码及可信设备记录：
 
 ```bash
-cd ~/codex-pwa
+cd /path/to/your/codex-pwa
 bash scripts/uninstall-user.sh --purge-config
 ```
 
 卸载脚本不会删除 Codex 登录、daemon、历史任务、源码仓库或项目文件。
+
+查看服务状态和最近日志：
+
+```bash
+systemctl --user status codex-pwa.service codex-pwa-private.socket
+journalctl --user -u codex-pwa.service -u codex-pwa-private.service --since "1 hour ago"
+```
+
+默认安装使用 `shared-daemon`，只重启当前账号的 PWA 服务可使用 `systemctl --user restart codex-pwa.service`，不会重启共享 Codex daemon 或其中的任务；手动改成 `isolated` 模式时，不要在任务运行中重启。上述操作不会重启 Linux 服务器或其他账号的服务。
 
 ## 安装后的首次使用
 
@@ -114,7 +131,7 @@ bash scripts/uninstall-user.sh --purge-config
 3. 使用安装输出的用户名和首次密码登录，并立即在“修改用户名或密码”中设置个人凭据。
 4. 将页面加入收藏或创建桌面快捷方式。远程 HTTP 可以在线使用和自动重连，但完整 PWA 离线外壳通常需要受信任的 HTTPS。
 
-如果页面无法打开，先在服务器上运行 `npm run doctor`，再确认蒲公英连接、私网 IP、端口和 `codex-pwa-private.socket` 状态。不要为了排障把服务改为监听公网。
+如果页面无法打开，先在实际安装目录运行 `npm run doctor`，再确认蒲公英连接、私网 IP、端口和 `codex-pwa-private.socket` 状态。不要为了排障把服务改为监听公网。
 
 ## 没有蒲公英时
 
@@ -128,6 +145,8 @@ npm run setup -- --loopback-only
 
 ## HTTP 与完整 PWA 的区别
 
-蒲公英 IP 上的普通 `http://` 页面可以作为手机网页或桌面快捷方式使用，但远程 HTTP 通常不属于浏览器安全上下文，Service Worker、离线外壳和标准 PWA 安装能力可能不可用。断线后的在线自动重连不受此限制。
+蒲公英 IP 上的普通 `http://` 页面可以作为手机网页或桌面快捷方式使用，但远程 HTTP 通常不属于浏览器安全上下文，Service Worker、离线外壳和标准 PWA 安装能力可能不可用，而且流量没有 HTTPS 加密。断线后的在线自动重连不受此限制。
 
-若需要真正的 PWA 安装和离线外壳，请在受控私网中配置手机信任的 HTTPS 入口；仍然不要把 Web UI 或 app-server 直接暴露到公网。
+若需要真正的 PWA 安装和离线外壳，请在受控私网中配置手机信任的 HTTPS 入口。反向代理还必须支持 `/api/events` 的 SSE 长连接并关闭缓冲、避免短超时；仍然不要把 Web UI 或 app-server 直接暴露到公网。
+
+手机 Web UI 和 Windows Codex Remote 可以看到同一任务历史，但同一个任务同时只能有一个活动写入者。不要在两端同时发送消息或审批；切换前先完成并关闭上一端的任务视图。若出现 `already has an active writer`，先完全关闭上一端，等待几秒后刷新，不要为此重启服务器或共享 daemon。
