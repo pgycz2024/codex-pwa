@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.14`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.15`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -40,7 +40,7 @@
 
 `v0.18.12` 完善公开仓库、AI 辅助安装、多人隔离和私网排障说明。
 
-`v0.18.14` 修复 systemd 安装路径格式问题，并在启动服务前自动校验生成的 unit，避免自定义端口和 Codex 路径配置被忽略。
+`v0.18.15` 补充私网端口防火墙配置提示，避免服务器本机健康但手机无法连接；`v0.18.14` 修复 systemd 安装路径格式问题，并在启动服务前自动校验生成的 unit。
 
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
@@ -76,7 +76,7 @@ cd codex-pwa
 npm run setup
 ```
 
-公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.14 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
+公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.15 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
 
 安装程序会自动：
 
@@ -92,6 +92,14 @@ npm run setup
 - 启动服务并执行 HTTP 健康检查。
 
 安装结束会显示手机网址、登录用户名 `codex` 和首次密码。
+
+如果使用蒲公英或其他私网入口，管理员还必须在服务器防火墙中放行安装输出的那个端口。以 `oray_vnc` 蒲公英接口为例（将地址和端口替换为安装输出的值）：
+
+```bash
+sudo ufw allow in on oray_vnc to PRIVATE_IP port PORT proto tcp comment 'Codex PWA via PgyVPN'
+```
+
+这条规则只放行指定私网接口、指定地址和指定 TCP 端口；安装器不会擅自取得 `sudo` 权限或修改全局防火墙。若手机页面一直加载，先访问 `http://PRIVATE_IP:PORT/api/health`，再检查 `sudo ufw status`、蒲公英组网和 `codex-pwa-private.socket`。
 
 第一次安装最好在该用户没有正在运行的 Codex 任务时进行，因为安装程序需要建立该用户自己的持久 daemon。已有特殊 daemon 配置的用户可以使用 `--skip-daemon-bootstrap`。
 

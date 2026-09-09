@@ -59,7 +59,7 @@ test("package, server, and documentation share one application version", async (
     readFile(new URL("../server.mjs", import.meta.url), "utf8"),
     readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
-  assert.equal(manifest.version, "0.18.14");
+  assert.equal(manifest.version, "0.18.15");
   assert.match(server, /APP_VERSION = JSON\.parse\(readFileSync\(join\(here, "package\.json"\)/);
   assert.doesNotMatch(server, /APP_VERSION = "\d+\.\d+\.\d+"/);
   assert.ok(readme.includes(`当前版本为 \`${manifest.version}\``));
@@ -1358,6 +1358,7 @@ test("per-user installer generates isolated roots, daemon socket, port, and priv
   const [code] = await once(child, "exit");
   assert.equal(code, 0, errors);
   assert.match(output, /http:\/\/172\.16\.2\.99:4266/);
+  assert.match(output, /sudo ufw allow in on oray_vnc/);
 
   const config = await readFile(join(home, ".config", "codex-pwa", "codex-pwa.env"), "utf8");
   assert.match(config, new RegExp(`CODEX_PWA_ROOTS="${home.replaceAll("/", "\\/")}"`));

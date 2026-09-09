@@ -63,6 +63,14 @@ sha256sum --ignore-missing -c SHA256SUMS-vX.Y.Z.txt
 
 安装器会在 `4177–4277` 中选择空闲端口，并输出类似 `http://蒲公英IP:4178` 的网址。每位用户的端口、密码和文件根目录都不同，因此手机必须打开自己那一行网址。若自动检测不到蒲公英 IP，可以使用 `npm run setup -- --private-ip SERVER_PRIVATE_IP`；端口冲突时使用 `npm run setup -- --port PORT`。需要限制文件访问范围时使用 `npm run setup -- --root /absolute/authorized/path`，只指定该账号获授权的目录；如果想先只检查配置而不启动服务，可执行 `npm run setup -- --dry-run`。
 
+管理员还必须为每个实际使用的私网端口放行防火墙。以蒲公英接口为例，将安装输出的地址和端口代入：
+
+```bash
+sudo ufw allow in on oray_vnc to SERVER_PRIVATE_IP port PORT proto tcp comment 'Codex PWA via PgyVPN'
+```
+
+安装器不会替用户修改 UFW。若服务本机健康检查正常但手机一直加载，优先检查这条规则是否存在，再检查手机是否连接同一蒲公英组网；不要把服务改为监听 `0.0.0.0`。
+
 ### 给 AI 的执行边界
 
 让 AI 部署时，应明确告诉它：当前终端已经登录到目标 Linux 用户；先检查 `id -un`、`echo "$HOME"`、`node --version`、`codex login status` 和私网 IP，再执行安装。AI 不会自动创建 Linux 账号、安装蒲公英客户端、取得 `sudo` 权限或替其他用户配置服务。缺少这些前提时，应先报告并等待管理员处理。

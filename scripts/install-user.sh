@@ -371,6 +371,8 @@ fi
 printf '\nSetup complete.\n'
 if [[ -n "$private_url" ]]; then
   printf 'Open on a device connected to the same private network: %s\n' "$private_url"
+  printf 'If UFW is enabled, an administrator must allow this private port on the oray_vnc interface:\n'
+  printf '  sudo ufw allow in on oray_vnc to %s port %s proto tcp comment '\''Codex PWA via PgyVPN'\''\n' "$private_ip" "$port"
 else
   printf 'Loopback URL: http://127.0.0.1:%s\n' "$port"
   printf 'Use an SSH tunnel or configure a private-network listener later.\n'
