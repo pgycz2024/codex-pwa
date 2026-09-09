@@ -37,7 +37,7 @@ cd codex-pwa
 npm run setup
 ```
 
-需要固定版本时，可使用 `git clone --branch v0.18.13 --depth 1 https://github.com/pgycz2024/codex-pwa.git`，或从 GitHub Releases 下载同名版本的 ZIP。仓库克隆不需要 GitHub 登录。
+需要固定版本时，可使用 `git clone --branch v0.18.14 --depth 1 https://github.com/pgycz2024/codex-pwa.git`，或从 GitHub Releases 下载同名版本的 ZIP。仓库克隆不需要 GitHub 登录。
 
 从 Release ZIP 安装前可在同一目录验证完整性：
 

@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.13`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.14`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -40,7 +40,7 @@
 
 `v0.18.12` 完善公开仓库、AI 辅助安装、多人隔离和私网排障说明。
 
-`v0.18.13` 进一步完善 API Key 认证说明、任意安装目录下的维护流程、Release 校验、服务排障、HTTPS/SSE 反向代理和跨端活动写入者说明。
+`v0.18.14` 修复 systemd 安装路径格式问题，并在启动服务前自动校验生成的 unit，避免自定义端口和 Codex 路径配置被忽略。
 
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
@@ -76,7 +76,7 @@ cd codex-pwa
 npm run setup
 ```
 
-公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.13 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
+公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.14 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
 
 安装程序会自动：
 
@@ -295,5 +295,6 @@ PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 O
 - `v0.18.11`：递增 PWA 缓存版本，确保已安装客户端及时更新资源
 - `v0.18.12`：完善公开仓库、AI 辅助部署和多人隔离文档
 - `v0.18.13`：补充认证、安装目录、校验、排障、HTTPS/SSE 和跨端并发说明
+- `v0.18.14`：修复 systemd 安装路径格式，并增加启动前 unit 校验
 
 Git 发布可使用版本标签。ZIP 更新会保留最近三份可恢复的旧程序目录。出现问题时只需恢复程序目录并重启该用户自己的 `codex-pwa.service`；不需要重启 Linux、共享 Codex daemon 或其他用户的任务。

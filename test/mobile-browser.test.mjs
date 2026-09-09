@@ -108,7 +108,7 @@ function jsonRoute(url) {
   if (parsed.pathname === "/api/status") {
     return {
       bridge: "ready", roots: ["/srv/example"], appRoot: projectDirectory,
-      instanceName: "Mobile Test", networkLabel: "受控测试私网", version: "0.18.13",
+      instanceName: "Mobile Test", networkLabel: "受控测试私网", version: "0.18.14",
       activeTurns: {}, ownedThreads: [], releasingThreads: [], pendingApprovals: [],
     };
   }

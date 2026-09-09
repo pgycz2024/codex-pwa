@@ -59,7 +59,7 @@ test("package, server, and documentation share one application version", async (
     readFile(new URL("../server.mjs", import.meta.url), "utf8"),
     readFile(new URL("../README.md", import.meta.url), "utf8"),
   ]);
-  assert.equal(manifest.version, "0.18.13");
+  assert.equal(manifest.version, "0.18.14");
   assert.match(server, /APP_VERSION = JSON\.parse\(readFileSync\(join\(here, "package\.json"\)/);
   assert.doesNotMatch(server, /APP_VERSION = "\d+\.\d+\.\d+"/);
   assert.ok(readme.includes(`当前版本为 \`${manifest.version}\``));
@@ -1324,10 +1324,12 @@ test("shared-daemon mode uses the Unix WebSocket without recycling the daemon", 
   assert.match(installer, /app-server daemon bootstrap/);
   assert.match(installer, /app-server daemon start/);
   assert.match(installer, /CODEX_PWA_DAEMON_SOCKET/);
+  assert.match(installer, /existing_configured_port/);
+  assert.match(installer, /stop codex-pwa-private\.socket[\s\S]*stop codex-pwa-private\.service[\s\S]*restart codex-pwa\.service[\s\S]*start codex-pwa-private\.socket/);
 });
 
 test("per-user installer generates isolated roots, daemon socket, port, and private-network units", async (t) => {
-  const home = await mkdtemp(join(tmpdir(), "codex-pwa-installer-test-"));
+  const home = await mkdtemp(join(tmpdir(), "codex pwa installer test-"));
   t.after(() => rm(home, { recursive: true, force: true }));
   const child = spawn("bash", [
     "scripts/install-user.sh",
@@ -1374,7 +1376,10 @@ test("per-user installer generates isolated roots, daemon socket, port, and priv
     readFile(join(unitRoot, "codex-pwa-private.socket"), "utf8"),
     readFile(join(unitRoot, "codex-pwa-private.service"), "utf8"),
   ]);
-  assert.match(service, /EnvironmentFile=/);
+  assert.ok(service.includes(`WorkingDirectory=${projectDirectory}\n`));
+  assert.ok(service.includes(`EnvironmentFile=${join(home, ".config", "codex-pwa", "codex-pwa.env")}\n`));
+  assert.doesNotMatch(service, /^WorkingDirectory=["']/m);
+  assert.doesNotMatch(service, /^EnvironmentFile=["']/m);
   assert.match(service, /MemoryHigh=768M/);
   assert.match(service, /MemoryMax=1G/);
   assert.match(socket, /ListenStream=172\.16\.2\.99:4266/);

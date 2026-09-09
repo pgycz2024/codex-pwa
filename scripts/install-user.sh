@@ -60,10 +60,12 @@ if [[ -z "$node_bin" || -z "$npm_bin" ]]; then
 fi
 
 existing_network_label=""
+existing_configured_port=""
 if [[ -f "$existing_env" ]]; then
   while IFS= read -r -d '' name && IFS= read -r -d '' value; do
     case "$name" in
       CODEX_PWA_PORT)
+        existing_configured_port=$value
         if [[ "$port_explicit" != "1" ]]; then port=$value; reuse_existing_port=1; fi
         ;;
       CODEX_PWA_ROOTS)
@@ -81,6 +83,9 @@ if [[ -f "$existing_env" ]]; then
       CODEX_PWA_NETWORK_LABEL) existing_network_label=$value ;;
     esac
   done < <("$node_bin" "$script_dir/read-env.mjs" "$existing_env")
+fi
+if [[ "$port_explicit" == "1" && -n "$existing_configured_port" && "$port" == "$existing_configured_port" ]]; then
+  reuse_existing_port=1
 fi
 
 if [[ "$network_explicit" != "1" && -z "$private_ip" ]]; then
@@ -228,6 +233,14 @@ systemd_value() {
   printf '"%s"' "$value"
 }
 
+systemd_path_value() {
+  local value=$1
+  # WorkingDirectory= and EnvironmentFile= parse quotes as path characters.
+  # Their entire right-hand side is already one value, including spaces.
+  value=${value//%/%%}
+  printf '%s' "$value"
+}
+
 env_file="$config_dir/codex-pwa.env"
 {
   printf 'CODEX_PWA_HOST=%s\n' "$(env_value '127.0.0.1')"
@@ -260,10 +273,10 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=$(systemd_value "$app_dir")
+WorkingDirectory=$(systemd_path_value "$app_dir")
 ExecStart=$(systemd_value "$node_bin") $(systemd_value "$app_dir/server.mjs")
 Environment=NODE_ENV=production
-EnvironmentFile=$(systemd_value "$env_file")
+EnvironmentFile=$(systemd_path_value "$env_file")
 Restart=on-failure
 RestartSec=3
 UMask=0077
@@ -321,21 +334,32 @@ EOF
 fi
 
 if [[ "$dry_run" != "1" ]]; then
+  if command -v systemd-analyze >/dev/null 2>&1; then
+    unit_files=("$unit_dir/codex-pwa.service")
+    if [[ -n "$private_url" ]]; then
+      unit_files+=("$unit_dir/codex-pwa-private.socket" "$unit_dir/codex-pwa-private.service")
+    fi
+    systemd-analyze --user verify "${unit_files[@]}"
+  fi
   # v0.11 and older used the deployment-specific "pgy" unit name. Retire it
   # before enabling the generic private-network proxy so only one listener is
   # left behind after an in-place reinstall.
   systemctl --user disable --now codex-pwa-pgy.socket 2>/dev/null || true
   systemctl --user stop codex-pwa-pgy.service 2>/dev/null || true
   rm -f -- "$unit_dir/codex-pwa-pgy.socket" "$unit_dir/codex-pwa-pgy.service"
+  # Stop both sides of the socket-activated proxy before restarting the main
+  # service. Otherwise the old socket may reactivate the proxy mid-reinstall,
+  # and systemd then refuses to restart the socket while its service is active.
+  systemctl --user stop codex-pwa-private.socket 2>/dev/null || true
+  systemctl --user stop codex-pwa-private.service 2>/dev/null || true
   systemctl --user daemon-reload
   systemctl --user enable codex-pwa.service
   systemctl --user restart codex-pwa.service
   if [[ -n "$private_url" ]]; then
     systemctl --user enable codex-pwa-private.socket
-    systemctl --user restart codex-pwa-private.socket
+    systemctl --user start codex-pwa-private.socket
   else
-    systemctl --user disable --now codex-pwa-private.socket 2>/dev/null || true
-    systemctl --user stop codex-pwa-private.service 2>/dev/null || true
+    systemctl --user disable codex-pwa-private.socket 2>/dev/null || true
   fi
   for attempt in $(seq 1 80); do
     if curl -fsS "http://127.0.0.1:$port/api/health" >/dev/null 2>&1; then break; fi
