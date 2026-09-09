@@ -15,6 +15,7 @@ Codex PWA can execute commands and expose files with the permissions of the Linu
 
 - API keys, access tokens, `~/.codex/auth.json`, or other Codex credentials
 - `~/.config/codex-pwa/access-password`
+- `~/.config/codex-pwa/access-username`
 - `~/.config/codex-pwa/trusted-devices.json`
 - generated `.env` files, logs, uploaded private data, or rollout/session files
 
@@ -27,6 +28,12 @@ Codex PWA can execute commands and expose files with the permissions of the Linu
 - Automated publishing may use a dedicated write-enabled Deploy Key limited to exactly one repository. Never reuse a personal SSH identity or place the key in a global agent.
 - Keep the GitHub checkout separate from the development repository. Only synchronize the already-sanitized ZIP snapshot with `scripts/publish-mirror.sh`; never attach a GitHub remote to private development history.
 - Pin GitHub host keys, bind the Deploy Key through the mirror's local `core.sshCommand`, require atomic non-force pushes, and revoke the key immediately if the server account is compromised.
+
+## Public repository boundary
+
+The public GitHub repository contains only the sanitized application source, documentation, tests, and release metadata. It does not contain server tasks, project files, Codex credentials, Web UI passwords, trusted-device cookies, logs, or the private development repository history. Reading or cloning the public repository does not grant access to the Linux server.
+
+Each user's real security boundary is still the Linux account, file permissions, Codex credentials, private-network membership, PWA login credentials, and allowed root. A public repository must never be treated as a replacement for those controls.
 
 The installer stores PWA configuration under `~/.config/codex-pwa` with restrictive permissions. Changing the PWA password invalidates previously trusted devices.
 

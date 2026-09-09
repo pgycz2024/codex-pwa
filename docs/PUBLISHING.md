@@ -8,7 +8,7 @@
 - 发布文件通过已有 SSH 连接下载到发布者的 Windows 电脑；
 - GitHub 仓库的创建、登录和推送全部在 Windows 完成；
 - 不上传服务器上现有项目的 `.git` 目录或开发历史；
-- 第一次发布建议使用 GitHub **Private** repository。
+- 内部开发仓库应保持 **Private**；对外分享的 GitHub 发布镜像必须只来自清洗后的 ZIP 快照，并在确认不含个人信息后才设为 **Public**。
 
 旧开发历史可能包含已经删除的服务器地址、个人目录或项目名称。即使当前文件已经清理，普通 `.gitignore` 也不能清除历史对象，因此不要直接推送开发仓库。
 
@@ -89,7 +89,7 @@ Windows 的 Git Credential Manager 或 VS Code 会使用 Windows 上的 GitHub �
 
 ## 五、组员安装
 
-不希望在共享服务器保存 GitHub 凭据的组员，应在自己的电脑下载 ZIP，再通过 SSH 传到服务器：
+组员可以直接从公开发布仓库下载 Release ZIP，或在自己的电脑下载 ZIP 后通过 SSH 传到服务器：
 
 ```bash
 unzip codex-pwa-vX.Y.Z.zip
@@ -97,7 +97,15 @@ cd codex-pwa-vX.Y.Z
 npm run setup
 ```
 
-愿意为单个私有仓库配置只读 Deploy Key 的组员，也可以直接克隆 GitHub 仓库；不要在共享服务器保存能够访问多个私人仓库的个人 SSH Key。
+也可以直接克隆公开发布仓库：
+
+```bash
+git clone https://github.com/pgycz2024/codex-pwa.git
+cd codex-pwa
+npm run setup
+```
+
+公开仓库无需 GitHub 凭据；不要在共享服务器保存能够访问多个私人仓库的个人 SSH Key。内部私有仓库如确需直接克隆，仍应只配置限定到单一仓库的只读 Deploy Key。
 
 ## 六、可选：仓库专用 Deploy Key 自动发布
 

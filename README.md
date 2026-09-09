@@ -1,6 +1,6 @@
 # Codex PWA
 
-一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.11`。
+一个面向手机和桌面浏览器的 Codex Remote Web UI，通过本机 `codex app-server` 操作 Linux 服务器。当前版本为 `0.18.12`。
 
 它适合通过蒲公英、ZeroTier、Tailscale 等受控私网使用。Windows 笔记本关机后，只要 Linux 服务器、用户级 systemd 和网络入口仍在运行，手机就可以继续查看或操作 Codex 任务。
 
@@ -38,6 +38,8 @@
 
 `v0.18.11` 递增 Service Worker 缓存版本，确保已经安装的 PWA 能取得最新资源。
 
+`v0.18.12` 完善公开仓库、AI 辅助安装、多人隔离和私网排障说明。
+
 > 这是社区自建客户端，不是 OpenAI 官方发布的 Web UI。`codex app-server` 的部分协议仍可能变化，升级 Codex CLI 后应重新运行测试。
 
 ## 最重要的部署原则
@@ -64,7 +66,15 @@ cd codex-pwa-vX.Y.Z
 npm run setup
 ```
 
-也可以从经过隐私清洗的私有 Git 仓库克隆后执行 `npm run setup`。
+也可以从经过隐私清洗的公开 GitHub 仓库克隆后执行 `npm run setup`：
+
+```bash
+git clone https://github.com/pgycz2024/codex-pwa.git
+cd codex-pwa
+npm run setup
+```
+
+公开仓库只包含清洗后的程序、文档和测试，不包含服务器任务、项目文件、登录凭据或个人 GitHub 凭据。需要可复现的固定版本时，将上面的克隆命令替换为 `git clone --branch v0.18.12 --depth 1 https://github.com/pgycz2024/codex-pwa.git`；也可以直接从 GitHub Releases 下载对应版本的 ZIP。
 
 安装程序会自动：
 
@@ -82,6 +92,22 @@ npm run setup
 安装结束会显示手机网址、登录用户名 `codex` 和首次密码。
 
 第一次安装最好在该用户没有正在运行的 Codex 任务时进行，因为安装程序需要建立该用户自己的持久 daemon。已有特殊 daemon 配置的用户可以使用 `--skip-daemon-bootstrap`。
+
+### 让 AI 协助安装
+
+如果让电脑上的 Codex、Claude Code 或其他 AI 协助部署，AI 必须同时具备：目标 Linux 账号的终端/SSH 操作权限、访问 GitHub 的网络权限，以及用户明确授予的命令执行权限。仅能打开 GitHub 页面并不能自动登录服务器，也不能替用户执行需要管理员权限的操作。
+
+可以把下面的要求连同本 README 和 [组内部署说明](docs/TEAM_DEPLOYMENT.md) 交给 AI：
+
+```text
+请按 Codex PWA 仓库的 README.md 和 docs/TEAM_DEPLOYMENT.md 部署当前 Linux 用户自己的实例。
+先检查当前用户名、HOME、Node.js 22+、npm、Codex CLI、codex login status、蒲公英私网 IP 和端口可用性。
+不得使用其他 Linux 用户的 home、Codex 凭据或 Web UI 配置；不得把服务监听到公网；不得重启 Linux 服务器或其他用户的 Codex daemon。
+缺少 Linux 账号、Codex 登录、蒲公英组网或管理员 linger 权限时先报告，不要猜测或绕过。
+确认前提后在本仓库执行 npm run setup，完成后报告实际生成的私网网址、登录用户名和需要管理员执行的命令；不要在聊天记录中复制密码或任何私密文件内容。
+```
+
+安装脚本不会创建 Linux 账号、配置蒲公英客户端或替用户取得 `sudo` 权限。多人部署必须由管理员先分配独立 Linux 账号；脚本会在 `4177–4277` 中寻找空闲端口，因此每个人会得到不同的 `IP:端口` 网址。
 
 完整组内部署说明见 [docs/TEAM_DEPLOYMENT.md](docs/TEAM_DEPLOYMENT.md)，不在共享服务器登录个人 GitHub 的发布步骤见 [docs/PUBLISHING.md](docs/PUBLISHING.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)，安全边界见 [SECURITY.md](SECURITY.md)。
 
@@ -174,6 +200,12 @@ bash scripts/uninstall-user.sh
 
 `.env.example` 仅用于说明，真实凭据不要放进仓库。
 
+## 多人部署的隔离边界
+
+公开 GitHub 仓库的可读权限与服务器访问权限是两回事。克隆仓库不会让同学获得服务器权限，也不会让同学看到其他用户的任务或文件。真正的隔离依赖每人独立的 Linux 账号、home、Codex 凭据、daemon、PWA 端口、登录凭据和 `CODEX_PWA_ROOTS`。
+
+不要让多人共用同一个 PWA 网址或同一个 Linux 账号。若某人的账号尚未建立、蒲公英 IP 无法检测、端口范围已耗尽或 `systemd-socket-proxyd` 不可用，应由管理员处理后再安装；不要通过把服务监听到 `0.0.0.0` 来绕过这些问题。
+
 ## 无蒲公英或其他私网
 
 ```bash
@@ -238,5 +270,6 @@ PWA 使用 Codex app-server 的 Unix socket JSON-RPC/WebSocket 传输。官方 O
 - `v0.18.9`：增强 GitHub Actions 中 Chrome 启动的兼容性与可诊断性
 - `v0.18.10`：增加需验证旧凭据的用户名或密码修改入口，并在修改后撤销全部可信设备
 - `v0.18.11`：递增 PWA 缓存版本，确保已安装客户端及时更新资源
+- `v0.18.12`：完善公开仓库、AI 辅助部署和多人隔离文档
 
 Git 发布可使用版本标签。ZIP 更新会保留最近三份可恢复的旧程序目录。出现问题时只需恢复程序目录并重启该用户自己的 `codex-pwa.service`；不需要重启 Linux、共享 Codex daemon 或其他用户的任务。
