@@ -797,7 +797,7 @@ test("ZIP distribution excludes Git history and has atomic update and compatible
   assert.match(publish, /git -C "\$mirror" push --atomic origin main "\$tag"/);
   assert.doesNotMatch(publish, /push .*--force/);
   assert.match(releaseWorkflow, /permissions:\s*\n\s*contents: write/);
-  assert.match(releaseWorkflow, /npm run release:local/);
+  assert.match(releaseWorkflow, /node scripts\/run-ci-check\.mjs release:local/);
   assert.match(releaseWorkflow, /gh release create/);
 });
 

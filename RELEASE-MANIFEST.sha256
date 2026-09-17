@@ -1,6 +1,6 @@
 b7c83b43987ab41c6b8f44ee555f6882c2139027870b78ec416bf1be84c06281  ./.env.example
-6f51a88964819ce5ae22e5446dd0059858494c69948ccfec2d33f7cc55e837d1  ./.github/workflows/check.yml
-8b1e7e26a978c6218f75cb521a0c2258a5947d38c20028e171885c28fb76c949  ./.github/workflows/release.yml
+8ac997cd8c41e5f3d926b72ad65878f427c65cf44ede8111b39c5cf800123290  ./.github/workflows/check.yml
+8711a2c8445daa61c915237db518d59685150dc9800a773ae09848262d1eb4b0  ./.github/workflows/release.yml
 d8b52d27b70ac724ebbacc556b36e3ff78cb17f6e600936d764755345301e032  ./.gitignore
 98e2a2cc6016bf4ca00cd4fbf5456b3de231a0844a16861d2f6068fc3c9d4810  ./CHANGELOG.md
 393fb7f844b8ff533de2f2856d7c7b9be3e4ed478f209500d760dc359b109e61  ./LICENSE
@@ -101,6 +101,7 @@ f7c25cc8c7894c23bd5f6357bf2f8c86c477b0f5ddf20ad7b9e1eec819ddb97c  ./public/write
 95775a8e4e741c136bbb45dfa518360120fa3e4cce152047cd2ed50ac621dd3f  ./scripts/make-release.sh
 6ca81add5a12f6ac3c34e425d123eab3026f3ff8a7cafc058b5b765003f01367  ./scripts/publish-mirror.sh
 cec6bf1ed74387be4e70b49e6348c101718ea042a9904c3588305a7290c4ea14  ./scripts/read-env.mjs
+0dc03959424e5b5bc6c9cfc768506686267a4297296e21097cfc360a33199430  ./scripts/run-ci-check.mjs
 841bd066c338ef203e76c9f0e1cfec5c9eef0d09f955293e28f9ff1a1e1d5bc4  ./scripts/set-password.sh
 363d0fce29f085982368ca35e7c7397fa309d6fec5b88ebe1e0d45955bf7e3f7  ./scripts/setup-push.mjs
 fb31c0138a6f69d859c32d86484d332e5d0099558bf83f07ab5f15307aef5c98  ./scripts/sync-ui-copy.mjs
@@ -142,7 +143,7 @@ f93f1ce80b40718d1df53f0da18b4085ca4b391234a8f045978b8a90ac698481  ./test/push-ht
 a732f4fa9613ca48c007d578a288cc67180af9ece306b7f30b39833577ee9fa1  ./test/release-manifest.test.mjs
 9493036db33c3c02b3b69da8be798b465123846690579b640db9a256062c147f  ./test/release-modules.test.mjs
 47fede786c612cf198fcfca28a338032c47141aa83bb0273a2c0d984cdf2e8dd  ./test/release-runtime.test.mjs
-167161335221421beb1cd01bf19b426176237592a00670c5a50da14777e4a71a  ./test/server-static.test.mjs
+e47a659e8a02d3c3eb475603febc667be627ccc9cded8a0d1453518e4d96f7de  ./test/server-static.test.mjs
 1e2457b970af679deb76beb62b8e3047a1d1e7a09978725a81f87a934380cd0c  ./test/task-recovery-http.test.mjs
 5aaa7e124cc4237affeca62797a7e634cd731821d3a873571734a4e0be333d50  ./test/task-recovery.test.mjs
 daa9f58520fb9e908b56c6c600150c9913dd2978007a8db4bb3faebef75e46f3  ./test/task-snapshot.test.mjs
