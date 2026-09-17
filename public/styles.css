@@ -843,7 +843,7 @@ dialog::backdrop { background: rgb(0 0 0 / 68%); backdrop-filter: blur(4px); }
   :root :is(button, summary, select, textarea, input:not([type="checkbox"]):not([type="radio"]),
   [role="button"], a[role="menuitem"]) { min-width: 44px; min-height: 44px; }
   button, summary, select, input:not([type="checkbox"]):not([type="radio"]) { flex-shrink: 0; }
-  .thread-select-target, .file-entry-select-target, .hidden-directory-toggle, .remember-device, .question-option { min-height: 44px; }
+  .thread-select-target, .file-entry-select-target, .hidden-directory-toggle, .remember-device, .question-option { min-width: 44px; min-height: 44px; }
   .thread-card { grid-template-columns: 44px minmax(0, 1fr) 54px; }
   .file-entry { grid-template-columns: 44px 34px minmax(0, 1fr) 60px; }
   .thread-menu-button, .file-entry-menu-button, .clear-search { width: 44px; height: 44px; }
