@@ -126,6 +126,7 @@ export function createEventConnectionManager({
     state.eventLastHeartbeatAt = 0;
     state.eventSource?.close();
     state.eventSource = null;
+    state.eventConnected = false;
   }
 
   function schedule(generation = state.eventGeneration, { immediate = false } = {}) {
@@ -152,6 +153,7 @@ export function createEventConnectionManager({
     state.eventReconnectTimer = null;
     state.eventSource?.close();
     state.eventSource = null;
+    state.eventConnected = false;
     clearInterval(state.eventHeartbeatTimer);
     state.eventHeartbeatTimer = null;
     if (!online()) {
@@ -183,6 +185,7 @@ export function createEventConnectionManager({
       if (now() - state.eventLastHeartbeatAt <= 60_000) return;
       events.close();
       state.eventSource = null;
+      state.eventConnected = false;
       invalidateRecovery();
       clearInterval(state.eventHeartbeatTimer);
       state.eventHeartbeatTimer = null;
@@ -192,6 +195,7 @@ export function createEventConnectionManager({
     }, 20_000);
     events.onopen = () => {
       if (generation !== state.eventGeneration || state.eventSource !== events) return;
+      state.eventConnected = true;
       state.eventReconnectAttempt = 0;
       state.offlineSince = null;
       state.eventLastHeartbeatAt = now();
@@ -202,6 +206,7 @@ export function createEventConnectionManager({
       if (generation !== state.eventGeneration || state.eventSource !== events) return;
       events.close();
       state.eventSource = null;
+      state.eventConnected = false;
       invalidateRecovery();
       clearInterval(state.eventHeartbeatTimer);
       state.eventHeartbeatTimer = null;

@@ -140,6 +140,7 @@ const state = {
   renameTargetId: null,
   tagTargetId: null,
   eventSource: null,
+  eventConnected: false,
   eventGeneration: 0,
   eventReconnectTimer: null,
   eventReconnectAttempt: 0,
@@ -3155,7 +3156,8 @@ async function loadStatus({ isCurrent = () => true } = {}) {
   elements.cwdInput.value ||= state.roots[0] || "";
   elements.instanceName.textContent = status.instanceName || "Linux Server";
   elements.networkLabel.textContent = status.networkLabel || "受控私有网络";
-  setConnection(status.bridge, status.error);
+  // A successful HTTP poll cannot prove that the event stream is connected.
+  if (state.eventConnected) setConnection(status.bridge, status.error);
   const pendingApprovals = new Map();
   for (const approval of status.pendingApprovals || []) {
     const requestId = approvalRequestId(approval?.requestId);

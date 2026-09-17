@@ -327,6 +327,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
       statusReads += 1;
       if (delayedStatus) {
         delayedStatus.requestId = requestId;
+        delayedStatus.requestIds?.push(requestId);
         return;
       }
       if (statusFailures > 0) {
@@ -427,6 +428,11 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
       close() { clearTimeout(this.openTimer); }
     };
     window.__menuClosures = [];
+    const nativeSetInterval = window.setInterval;
+    window.setInterval = (callback, interval, ...args) => {
+      if (interval === 15000) window.__pollVisibleState = callback;
+      return nativeSetInterval(callback, interval, ...args);
+    };
     const removeElement = Element.prototype.remove;
     Element.prototype.remove = function() {
       if (this.classList.contains('floating-popover')) {
@@ -1343,13 +1349,16 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   assert.equal(await evaluate(cdp, `document.getElementById("toast").textContent.includes("任务状态已同步")`), false);
   await waitForExpression(cdp, `document.getElementById("toast").textContent.includes("任务状态已同步")`);
   assert.ok(statusReads >= readsBeforeFailure + 2, "recovery retries the failed status read before reporting synchronization");
-  const delayedReply = delayedStatus = {};
+  const delayedReply = delayedStatus = { requestIds: [] };
   await evaluate(cdp, `window.__staleEventSource = window.__testEventSource; window.__testEventSource.onopen()`);
   for (let attempt = 0; attempt < 60 && !delayedReply.requestId; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 50));
   assert.ok(delayedReply.requestId, "the browser starts a status read that can be delayed across disconnect");
+  await evaluate(cdp, `window.__pollVisibleState()`);
+  for (let attempt = 0; attempt < 60 && delayedReply.requestIds.length < 2; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 50));
+  assert.ok(delayedReply.requestIds.length >= 2, "the regular HTTP poll overlaps event recovery");
   await evaluate(cdp, `window.__staleEventSource.onerror()`);
   delayedStatus = null;
-  await fulfillWrite(delayedReply.requestId, jsonRoute(`http://127.0.0.1:${appPort}/api/status`));
+  for (const requestId of delayedReply.requestIds) await fulfillWrite(requestId, jsonRoute(`http://127.0.0.1:${appPort}/api/status`));
   await new Promise((resolve) => setTimeout(resolve, 200));
   assert.equal(await evaluate(cdp, `document.getElementById("connectionLabel").textContent`), "正在重新连接…",
     "a late successful HTTP snapshot cannot mark a disconnected event connection ready");

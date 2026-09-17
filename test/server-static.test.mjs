@@ -2667,7 +2667,7 @@ test("sidebar utility menu is a unified 3x2 layout with inline connection status
   assert.match(notifications, /isSecureContext/);
   assert.match(app, /notificationButton\.addEventListener\("click", enableBrowserNotifications\)/);
   assert.match(worker, /"\/browser-notifications\.js"/);
-  assert.match(worker, /codex-pwa-v118/);
+  assert.match(worker, /codex-pwa-v119/);
 });
 
 test("conversation list separates recent, all-history, and archived sessions", async () => {
@@ -3225,7 +3225,7 @@ test("Goal state, confirmation actions, and top-level task menus are wired", asy
   assert.match(goalActions, /正在保存 Goal/);
   assert.match(app, /加载中……/);
   assert.match(historyNodes, /historyNodesList\.setAttribute\("aria-busy"/);
-  assert.match(worker, /codex-pwa-v118/);
+  assert.match(worker, /codex-pwa-v119/);
 });
 
 test("history pages are normalized to chronological order", () => {
