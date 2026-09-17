@@ -575,6 +575,9 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     };
   })()`);
   assert.deepEqual(openedMenu, { popover: true, expanded: "true", cardClass: "thread-card menu-open" });
+  // A list replacement can queue a scroll event that arrives after the menu
+  // opens, even though its anchor is already at the final position.
+  await evaluate(cdp, `document.getElementById("threadList").dispatchEvent(new Event("scroll"))`);
   await waitForExpression(cdp, `document.activeElement?.getAttribute("role") === "menuitem"`);
   await key("End");
   assert.equal(await evaluate(cdp, `document.activeElement === document.querySelector('.floating-popover').lastElementChild`), true);
@@ -588,8 +591,12 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   await evaluate(cdp, `document.querySelector(".thread-menu-button").click()`);
   await evaluate(cdp, `new Promise((resolve) => setTimeout(resolve, 700))`);
   assert.equal(await evaluate(cdp, `document.querySelector(".floating-popover") !== null`), true);
-  await evaluate(cdp, `document.getElementById("threadList").dispatchEvent(new Event("scroll"))`);
-  assert.equal(await evaluate(cdp, `document.querySelector(".floating-popover") === null`), true);
+  await evaluate(cdp, `(() => {
+    const spacer = document.createElement('div'); spacer.id = 'test-scroll-spacer'; spacer.style.height = '1000px';
+    const list = document.getElementById('threadList'); list.append(spacer); list.scrollTop += 40;
+  })()`);
+  await waitForExpression(cdp, `document.querySelector(".floating-popover") === null`);
+  await evaluate(cdp, `document.getElementById('test-scroll-spacer').remove()`);
   await evaluate(cdp, `document.querySelector(".thread-menu-button").click()`);
   await waitForExpression(cdp, `document.querySelector(".floating-popover")`);
   await evaluate(cdp, `document.getElementById("threadSearch").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))`);

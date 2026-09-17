@@ -1356,7 +1356,7 @@ function openFloatingMenu(anchor, owner, actions) {
   }
   anchor.setAttribute("aria-expanded", "true");
   owner?.classList.add("menu-open");
-  state.floatingMenu = { anchor, owner, element: popover };
+  state.floatingMenu = { anchor, owner, element: popover, anchorRect: anchor.getBoundingClientRect() };
   popover.style.visibility = "hidden";
   const host = anchor.closest('dialog[open], [aria-modal="true"]') || document.body;
   host.append(popover);
@@ -3839,6 +3839,12 @@ function wireEvents() {
     // A background conversation update may scroll while a file dialog is
     // open. Only scrolling an ancestor of the trigger invalidates its menu.
     if (menu && event.target !== document && !event.target.contains?.(menu.anchor)) return;
+    if (menu) {
+      // Layout changes can queue a scroll event before the menu opens. Ignore
+      // that late event when the trigger has not moved since opening.
+      const anchor = menu.anchor.getBoundingClientRect();
+      if (anchor.top === menu.anchorRect.top && anchor.left === menu.anchorRect.left) return;
+    }
     closeAllMenus();
   }, true);
   document.addEventListener("touchmove", closeAllMenus, { passive: true, capture: true });
