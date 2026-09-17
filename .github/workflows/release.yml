@@ -13,7 +13,12 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    uses: ./.github/workflows/check.yml
+    permissions:
+      contents: read
   publish:
+    needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
