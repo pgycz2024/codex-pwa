@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import WebSocket from "ws";
 
 const projectDirectory = dirname(fileURLToPath(new URL("../server.mjs", import.meta.url)));
-const chromeCandidates = ["/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
+const chromeCandidates = [process.env.CODEX_PWA_TEST_CHROME, "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"].filter(Boolean);
 
 async function executableChrome() {
   for (const candidate of chromeCandidates) {
@@ -202,7 +202,14 @@ async function waitForExpression(cdp, expression) {
     if (await evaluate(cdp, expression)) return;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  throw new Error(`Browser condition timed out: ${expression}`);
+  const browser = await cdp.send("Browser.getVersion");
+  const context = await evaluate(cdp, `({
+    active: document.activeElement?.outerHTML?.slice(0, 600),
+    menu: document.querySelector('.floating-popover')?.outerHTML?.slice(0, 1600),
+    sidebar: document.getElementById('sidebar')?.className,
+    visibility: document.visibilityState,
+  })`);
+  throw new Error(`Browser condition timed out: ${expression}; ${browser.product}; ${JSON.stringify(context)}`);
 }
 
 test("mobile Chrome viewport keeps core navigation, dialogs, and long titles stable", async (t) => {

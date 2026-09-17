@@ -134,7 +134,7 @@ d7d404412ae3deee5e0ebee180b2b9b2936582053b536c8b42b0d9afba2b062a  ./test/file-ap
 5b15705be40fa855d8f4f6550656804c79053aa6e3baaf7c5c345f7e450ada3e  ./test/live-recovery-guard.test.mjs
 56aea43fa816ff9900ccda06ca86ce9cce2eba45a6f036abc391061272b0c20e  ./test/message-identity.test.mjs
 f2928cb63039eb9dbf904b51f8df559a338b4175b6da1a3091e21b1c1a24c833  ./test/message-time.test.mjs
-fe18890f71977690acfab81411d05c49bc7507b1a4b51acd62499f93abdd4cc2  ./test/mobile-browser.test.mjs
+1954de5c92c47c7a46e7b455fc0d4b7fe03f67934247990c9a201f842958ad9c  ./test/mobile-browser.test.mjs
 e95158653423061a19c30503010e90ba204a992afce368b15466a106bce696ee  ./test/module-boundaries.test.mjs
 ca5b98e9b1d978411a5a3e21c943d0256c187df58243389597ad8e6bf34d8520  ./test/push-browser.test.mjs
 936ae6907042275395ab529a5d8907b9d0f22fc981e9c6d7549cd9e90db32dce  ./test/push-config.test.mjs
