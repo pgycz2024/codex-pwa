@@ -1,5 +1,13 @@
 export const DIFF_CHUNK_SIZE = 240;
 
+// Exact bounded comparison: item counts and text lengths miss changed tool
+// results, command output and same-length corrections. Large snapshots simply
+// bypass deduplication so no retained signature can grow without bound.
+export function transcriptSignature(turn, maxChars = 65_536) {
+  const value = JSON.stringify(turn);
+  return typeof value === "string" && value.length <= maxChars ? value : null;
+}
+
 export function chronologicalTurns(turns, sortDirection = "desc") {
   const values = Array.isArray(turns) ? [...turns] : [];
   return sortDirection === "desc" ? values.reverse() : values;

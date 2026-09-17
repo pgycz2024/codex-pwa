@@ -1,3 +1,4 @@
+import { uiText } from "./public/ui-copy.js";
 const EFFORTS = new Set(["low", "medium", "high", "xhigh", "max", "ultra"]);
 export const PERMISSION_PRESETS = new Set(["request", "auto", "full"]);
 
@@ -32,7 +33,7 @@ export function permissionPresetFromSettings(settings = {}) {
 }
 
 export function permissionPresetRpc(preset, currentSandbox = null) {
-  if (!PERMISSION_PRESETS.has(preset)) throw new Error("Unsupported permission preset");
+  if (!PERMISSION_PRESETS.has(preset)) throw new Error(uiText("settingsErrors.threadStartPermission.text"));
   if (preset === "full") {
     return {
       approvalPolicy: "never",
@@ -48,7 +49,7 @@ export function permissionPresetRpc(preset, currentSandbox = null) {
 }
 
 export function threadStartPermission(preset) {
-  if (!PERMISSION_PRESETS.has(preset)) throw new Error("Unsupported permission preset");
+  if (!PERMISSION_PRESETS.has(preset)) throw new Error(uiText("settingsErrors.threadStartPermission.text"));
   if (preset === "full") {
     return { approvalPolicy: "never", approvalsReviewer: "user", sandbox: "danger-full-access" };
   }
@@ -94,13 +95,13 @@ export function serializeThreadSettings(response = {}) {
 
 export function parseSettingsOverrides(raw, currentSettings = {}) {
   if (raw === undefined || raw === null) return { rpc: {}, applied: {} };
-  if (typeof raw !== "object" || Array.isArray(raw)) throw new Error("Settings must be an object");
+  if (typeof raw !== "object" || Array.isArray(raw)) throw new Error(uiText("settingsErrors.parseSettingsOverrides.text3"));
   const rpc = {};
   const applied = {};
 
   if (Object.hasOwn(raw, "model")) {
     const model = String(raw.model || "").trim().slice(0, 120);
-    if (!model) throw new Error("Model override cannot be empty");
+    if (!model) throw new Error(uiText("settingsErrors.parseSettingsOverrides.text2"));
     rpc.model = model;
     applied.model = model;
   }
@@ -110,7 +111,7 @@ export function parseSettingsOverrides(raw, currentSettings = {}) {
       applied.effort = null;
     } else {
       const effort = String(raw.effort);
-      if (!EFFORTS.has(effort)) throw new Error("Unsupported reasoning effort");
+      if (!EFFORTS.has(effort)) throw new Error(uiText("settingsErrors.parseSettingsOverrides.text"));
       rpc.effort = effort;
       applied.effort = effort;
     }

@@ -12,7 +12,8 @@ export function fixedVirtualRange({ total, scrollTop, rowHeight, viewportHeight,
   const safeViewport = Math.max(safeRowHeight, Number(viewportHeight) || safeRowHeight);
   const safeOverscan = Math.max(0, Number.parseInt(overscan, 10) || 0);
   const visibleRows = Math.max(1, Math.ceil(safeViewport / safeRowHeight));
-  const start = Math.max(0, Math.floor(Math.max(0, Number(scrollTop) || 0) / safeRowHeight) - safeOverscan);
+  const firstVisible = Math.min(Math.max(0, safeTotal - visibleRows), Math.floor(Math.max(0, Number(scrollTop) || 0) / safeRowHeight));
+  const start = Math.max(0, firstVisible - safeOverscan);
   const end = Math.min(safeTotal, start + visibleRows + safeOverscan * 2);
   return { start, end };
 }

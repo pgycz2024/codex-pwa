@@ -4,29 +4,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b0c0f" />
-    <title>文件预览 · Codex Remote</title>
+    <title><!--copy:html.file-preview.text-->文件预览 · Codex Remote<!--/copy--></title>
     <link rel="icon" href="/icon.svg" />
     <link rel="stylesheet" href="/file-preview.css" />
   </head>
   <body>
     <header class="viewer-bar">
-      <a class="viewer-back" href="/" aria-label="返回任务">‹</a>
+      <a class="viewer-back" href="/" aria-label="返回任务" data-copy-aria-label="html.file-preview.aria-label">‹</a>
       <div class="viewer-title">
-        <strong id="fileName">正在打开文件…</strong>
-        <span id="fileMeta">请稍候</span>
+        <strong id="fileName"><!--copy:html.fileName.text-->正在打开文件…<!--/copy--></strong>
+        <span id="fileMeta"><!--copy:common.pleaseWait-->请稍候<!--/copy--></span>
       </div>
       <div class="viewer-actions">
-        <div id="zoomControls" class="zoom-controls hidden" aria-label="缩放控制">
-          <button id="zoomOutButton" type="button" aria-label="缩小">−</button>
+        <div id="zoomControls" class="zoom-controls hidden" aria-label="缩放控制" data-copy-aria-label="html.zoomControls.aria-label">
+          <button id="zoomOutButton" type="button" aria-label="缩小" data-copy-aria-label="html.zoomOutButton.aria-label">−</button>
           <span id="zoomLabel">100%</span>
-          <button id="zoomInButton" type="button" aria-label="放大">＋</button>
+          <button id="zoomInButton" type="button" aria-label="放大" data-copy-aria-label="html.zoomInButton.aria-label">＋</button>
         </div>
-        <a id="downloadButton" class="download-button hidden" href="#" download aria-label="下载文件">↓</a>
+        <a id="downloadButton" class="download-button hidden" href="#" download aria-label="下载文件" data-copy-aria-label="common.downloadFile">↓</a>
       </div>
     </header>
 
     <main id="preview" class="preview" aria-live="polite">
-      <div class="loading-card"><span class="spinner"></span><p>正在读取服务器文件…</p></div>
+      <div class="loading-card"><span class="spinner"></span><p><!--copy:files.loadFileBrowser.showLoadingToast-->正在读取服务器文件…<!--/copy--></p></div>
     </main>
 
     <script type="module" src="/file-preview.js"></script>

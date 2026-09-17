@@ -1,12 +1,13 @@
+import { uiText } from "./public/ui-copy.js";
 import { basename, join, relative, sep } from "node:path";
 
 export function validateDirectoryName(value) {
   const name = String(value || "").normalize("NFC").trim();
-  if (!name) return { ok: false, error: "Directory name is required" };
-  if (name === "." || name === "..") return { ok: false, error: "Directory name cannot be . or .." };
-  if (/[\/\\]/.test(name)) return { ok: false, error: "Directory name cannot contain slashes" };
-  if (/[\u0000-\u001f\u007f]/.test(name)) return { ok: false, error: "Directory name contains control characters" };
-  if (Buffer.byteLength(name) > 200) return { ok: false, error: "Directory name is too long" };
+  if (!name) return { ok: false, error: uiText("directoryErrors.validateDirectoryName.error5") };
+  if (name === "." || name === "..") return { ok: false, error: uiText("directoryErrors.validateDirectoryName.error4") };
+  if (/[\/\\]/.test(name)) return { ok: false, error: uiText("directoryErrors.validateDirectoryName.error3") };
+  if (/[\u0000-\u001f\u007f]/.test(name)) return { ok: false, error: uiText("directoryErrors.validateDirectoryName.error2") };
+  if (Buffer.byteLength(name) > 200) return { ok: false, error: uiText("directoryErrors.validateDirectoryName.error") };
   return { ok: true, name };
 }
 

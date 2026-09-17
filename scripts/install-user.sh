@@ -7,7 +7,7 @@ Usage: bash scripts/install-user.sh [options]
 
 Options:
   --port PORT             Private-network port (default: first free port in 4177-4277)
-  --root PATH             Only expose this project root (default: current user's home)
+  --root PATH             Only expose this project root (default: this PWA checkout)
   --private-ip IP         Bind the private-network proxy to this IP
   --loopback-only         Do not create a private-network listener
   --instance-name NAME    Name shown in the Web UI
@@ -23,7 +23,7 @@ app_dir=$(cd -- "$script_dir/.." && pwd -P)
 config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/codex-pwa"
 unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 existing_env="$config_dir/codex-pwa.env"
-root_dir="$HOME"
+root_dir="$app_dir"
 port=""
 private_ip=""
 instance_name="${USER:-user} 的 Codex"
@@ -61,6 +61,7 @@ fi
 
 existing_network_label=""
 existing_configured_port=""
+declare -A persisted_file_settings=()
 if [[ -f "$existing_env" ]]; then
   while IFS= read -r -d '' name && IFS= read -r -d '' value; do
     case "$name" in
@@ -81,6 +82,8 @@ if [[ -f "$existing_env" ]]; then
         if [[ "$network_explicit" != "1" && "$value" == "1" ]]; then loopback_only=1; fi
         ;;
       CODEX_PWA_NETWORK_LABEL) existing_network_label=$value ;;
+      CODEX_PWA_ROOTS_FILE|CODEX_PWA_EVENT_REPLAY_FILE|CODEX_PWA_TASK_RECOVERY_FILE|CODEX_PWA_PUSH_CONFIG_FILE|CODEX_PWA_PUSH_STORE_FILE)
+        persisted_file_settings["$name"]=$value ;;
     esac
   done < <("$node_bin" "$script_dir/read-env.mjs" "$existing_env")
 fi
@@ -113,11 +116,17 @@ for configured_root in "${configured_roots[@]}"; do
   canonical_roots+=("$(cd -- "$configured_root" && pwd -P)")
 done
 root_dir=$(IFS=:; printf '%s' "${canonical_roots[*]}")
+home_root=$(cd -- "$HOME" && pwd -P)
+wide_home_root=0
+if [[ "$root_dir" == "$home_root" ]]; then wide_home_root=1; fi
+if [[ "$wide_home_root" == "1" ]]; then
+  printf 'WARNING: CODEX_PWA_ROOTS covers the entire user home. Prefer --root /absolute/project/path for production.\n' >&2
+fi
 
 codex_bin=${CODEX_BIN:-$(command -v codex || true)}
-node_major=$($node_bin -p 'Number(process.versions.node.split(".")[0])')
+node_major=$("$node_bin" -p 'Number(process.versions.node.split(".")[0])')
 if ((node_major < 22)); then
-  printf 'Node.js 22 or newer is required; found %s.\n' "$($node_bin --version)" >&2
+  printf 'Node.js 22 or newer is required; found %s.\n' "$("$node_bin" --version)" >&2
   exit 1
 fi
 if [[ -z "$codex_bin" && "$dry_run" != "1" ]]; then
@@ -162,6 +171,9 @@ if [[ "$non_interactive" != "1" && "$dry_run" != "1" ]]; then
   printf '\nCodex PWA per-user setup\n'
   printf '  App directory : %s\n' "$app_dir"
   printf '  Allowed files : %s\n' "$root_dir"
+  if [[ "$wide_home_root" == "1" ]]; then
+    printf '  Security note : the entire home is exposed; rerun with --root to limit file access\n'
+  fi
   printf '  Web UI port   : %s\n' "$port"
   if [[ "$loopback_only" == "1" || -z "$private_ip" ]]; then
     printf '  Network       : loopback only\n'
@@ -172,28 +184,47 @@ if [[ "$non_interactive" != "1" && "$dry_run" != "1" ]]; then
   if [[ "$reply" =~ ^[Nn]$ ]]; then exit 0; fi
 fi
 
+daemon_socket_from_json() {
+  "$node_bin" -e '
+    const value = JSON.parse(process.argv[1]);
+    if (value.status !== "running" || typeof value.socketPath !== "string" || !value.socketPath.startsWith("/")) process.exit(1);
+    process.stdout.write(value.socketPath);
+  ' "$1" 2>/dev/null
+}
+
 if [[ "$dry_run" != "1" ]]; then
   printf 'Installing Node dependencies...\n'
-  "$npm_bin" ci --omit=dev
+  "$npm_bin" --prefix "$app_dir" ci --omit=dev
   if ! "$codex_bin" login status >/dev/null; then
     printf 'Codex is not logged in for user %s. Run codex login first.\n' "${USER:-unknown}" >&2
     exit 1
   fi
   if [[ "$skip_daemon_bootstrap" != "1" ]]; then
-    if ! "$codex_bin" app-server daemon bootstrap --help >/dev/null 2>&1; then
-      printf 'This Codex CLI is too old for durable daemon bootstrap. Update Codex first.\n' >&2
-      exit 1
+    # bootstrap can replace an existing managed PID daemon. Query it before
+    # any lifecycle command so reinstalling the PWA preserves running tasks.
+    if daemon_json=$("$codex_bin" app-server daemon version 2>/dev/null); then
+      if ! daemon_socket=$(daemon_socket_from_json "$daemon_json"); then
+        printf 'Could not validate the running Codex daemon. No daemon lifecycle command was attempted; check codex app-server daemon version.\n' >&2
+        exit 1
+      fi
+      printf 'Reusing the running Codex app-server daemon.\n'
+    else
+      if ! "$codex_bin" app-server daemon bootstrap --help >/dev/null 2>&1; then
+        printf 'This Codex CLI is too old for durable daemon bootstrap. Update Codex first.\n' >&2
+        exit 1
+      fi
+      printf 'Installing durable Codex app-server management...\n'
+      if ! "$codex_bin" app-server daemon bootstrap; then
+        printf 'Codex daemon bootstrap failed. Some CLI installations require a managed standalone Codex installation for this user.\n' >&2
+        printf 'After preparing that installation, retry setup. If this user already has a running daemon, rerun with --skip-daemon-bootstrap.\n' >&2
+        printf 'PWA service configuration has not been changed.\n' >&2
+        exit 1
+      fi
+      "$codex_bin" app-server daemon start
     fi
-    printf 'Installing durable Codex app-server management...\n'
-    "$codex_bin" app-server daemon bootstrap
-    "$codex_bin" app-server daemon start
   fi
-  daemon_json=$($codex_bin app-server daemon version)
-  daemon_socket=$($node_bin -e '
-    const value = JSON.parse(process.argv[1]);
-    if (value.status !== "running" || !value.socketPath) process.exit(1);
-    process.stdout.write(value.socketPath);
-  ' "$daemon_json") || {
+  daemon_json=$("$codex_bin" app-server daemon version)
+  daemon_socket=$(daemon_socket_from_json "$daemon_json") || {
     printf 'The Codex app-server daemon is not running.\n' >&2
     exit 1
   }
@@ -209,7 +240,7 @@ username_file="$config_dir/access-username"
 session_file="$config_dir/trusted-devices.json"
 created_password=""
 if [[ ! -s "$password_file" ]]; then
-  created_password=$($node_bin -e 'process.stdout.write(require("node:crypto").randomBytes(12).toString("base64url"))')
+  created_password=$("$node_bin" -e 'process.stdout.write(require("node:crypto").randomBytes(12).toString("base64url"))')
   printf '%s\n' "$created_password" >"$password_file"
   chmod 600 "$password_file"
 fi
@@ -253,6 +284,11 @@ env_file="$config_dir/codex-pwa.env"
   printf 'CODEX_PWA_PASSWORD_FILE=%s\n' "$(env_value "$password_file")"
   printf 'CODEX_PWA_USERNAME_FILE=%s\n' "$(env_value "$username_file")"
   printf 'CODEX_PWA_SESSION_FILE=%s\n' "$(env_value "$session_file")"
+  for name in CODEX_PWA_ROOTS_FILE CODEX_PWA_EVENT_REPLAY_FILE CODEX_PWA_TASK_RECOVERY_FILE CODEX_PWA_PUSH_CONFIG_FILE CODEX_PWA_PUSH_STORE_FILE; do
+    if [[ -n "${persisted_file_settings[$name]+set}" ]]; then
+      printf '%s=%s\n' "$name" "$(env_value "${persisted_file_settings[$name]}")"
+    fi
+  done
   printf 'CODEX_PWA_INSTANCE_NAME=%s\n' "$(env_value "$instance_name")"
   printf 'CODEX_PWA_PRIVATE_IP=%s\n' "$(env_value "$private_ip")"
   printf 'CODEX_PWA_LOOPBACK_ONLY=%s\n' "$(env_value "$loopback_only")"

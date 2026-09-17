@@ -22,111 +22,143 @@
     <main id="authGate" class="auth-gate">
       <section class="login-card" aria-labelledby="loginTitle">
         <div class="login-brand"><img src="/icon.svg" alt="" /></div>
-        <span class="eyebrow">TRUSTED DEVICE</span>
-        <h1 id="loginTitle">登录 Codex Remote</h1>
-        <p>首次登录后可将此浏览器记为可信设备 90 天。服务应只通过受控私网或受信任的 HTTPS 入口访问。</p>
+        <span class="eyebrow"><!--copy:headings.trusted_device-->可信设备<!--/copy--></span>
+        <h1 id="loginTitle"><!--copy:html.loginTitle.text-->登录 Codex Remote<!--/copy--></h1>
+        <p><!--copy:html.loginTitle.text2-->首次登录后可将此浏览器记为可信设备 90 天。服务应只通过受控私网或受信任的 HTTPS 入口访问。<!--/copy--></p>
         <form id="loginForm" class="login-form">
           <label class="field">
-            <span>用户名</span>
+            <span><!--copy:common.username-->用户名<!--/copy--></span>
             <input id="loginUsername" value="codex" autocomplete="username" required />
           </label>
           <label class="field">
-            <span>密码</span>
+            <span><!--copy:common.password-->密码<!--/copy--></span>
             <input id="loginPassword" type="password" autocomplete="current-password" required />
           </label>
           <label class="remember-device">
             <input id="rememberDevice" type="checkbox" checked />
-            <span>记住此设备 90 天</span>
+            <span><!--copy:html.rememberDevice.text-->记住此设备 90 天<!--/copy--></span>
           </label>
           <p id="loginError" class="login-error hidden" role="alert"></p>
-          <button id="loginButton" class="primary-button full-width" type="submit">登录</button>
+          <button id="loginButton" class="primary-button full-width" type="submit"><!--copy:app.wireEvents.textContent-->登录<!--/copy--></button>
         </form>
-        <button id="changeCredentialsLoginButton" class="secondary-upload-button full-width" type="button">修改用户名或密码</button>
-        <small>若清除浏览器 Cookie、修改用户名或密码，或注销全部设备，需要重新登录。</small>
+        <button id="changeCredentialsLoginButton" class="secondary-upload-button full-width" type="button"><!--copy:html.changeCredentialsLoginButton.text-->修改用户名或密码<!--/copy--></button>
+        <small><!--copy:html.changeCredentialsLoginButton.text2-->若清除浏览器 Cookie、修改用户名或密码，或退出全部设备，需要重新登录。<!--/copy--></small>
       </section>
     </main>
 
     <div id="appShell" class="app-shell hidden">
-      <aside id="sidebar" class="sidebar" aria-label="任务列表">
+      <aside id="sidebar" class="sidebar" aria-label="任务列表" tabindex="-1" inert aria-hidden="true" data-copy-aria-label="html.sidebar.aria-label">
         <div class="sidebar-brand">
           <div class="brand-mark"><img src="/icon.svg" alt="" /></div>
           <div class="brand-copy">
             <strong>Codex Remote</strong>
             <span id="instanceName">Linux Server</span>
           </div>
-          <button id="closeSidebarButton" class="icon-button mobile-only" type="button" aria-label="关闭侧栏">×</button>
+          <button id="closeSidebarButton" class="icon-button mobile-only" type="button" aria-label="关闭侧栏" data-copy-aria-label="html.closeSidebarButton.aria-label">×</button>
         </div>
 
         <button id="newTaskButton" class="new-task-button" type="button">
           <span aria-hidden="true">＋</span>
-          新建任务
+          <!--copy:headings.new_task-->新建任务<!--/copy-->
           <kbd class="desktop-only">N</kbd>
         </button>
 
         <div class="search-box">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" /></svg>
-          <input id="threadSearch" type="search" placeholder="搜索任务" autocomplete="off" />
-          <button id="clearSearchButton" class="clear-search hidden" type="button" aria-label="清除搜索">×</button>
+          <input id="threadSearch" type="search" aria-label="搜索任务" placeholder="搜索任务" autocomplete="off" data-copy-aria-label="html.threadSearch.aria-label" data-copy-placeholder="html.threadSearch.aria-label" />
+          <button id="clearSearchButton" class="clear-search hidden" type="button" aria-label="清除搜索" data-copy-aria-label="html.clearSearchButton.aria-label">×</button>
         </div>
 
-        <div class="list-tabs" role="tablist" aria-label="任务范围">
-          <button id="recentTab" class="list-tab active" type="button" role="tab" aria-selected="true">近7天会话</button>
-          <button id="allHistoryTab" class="list-tab" type="button" role="tab" aria-selected="false">全部历史会话</button>
-          <button id="archivedTab" class="list-tab" type="button" role="tab" aria-selected="false">已归档会话</button>
-          <button id="refreshButton" class="icon-button compact" type="button" aria-label="刷新任务">↻</button>
+        <div class="list-tabs" role="tablist" aria-label="任务范围" aria-orientation="horizontal" data-copy-aria-label="html.clearSearchButton.aria-label2">
+          <button id="recentTab" class="list-tab active" type="button" role="tab" aria-selected="true" aria-controls="threadList" tabindex="0"><!--copy:html.recentTab.text-->近7天任务<!--/copy--></button>
+          <button id="allHistoryTab" class="list-tab" type="button" role="tab" aria-selected="false" aria-controls="threadList" tabindex="-1"><!--copy:html.allHistoryTab.text-->全部历史任务<!--/copy--></button>
+          <button id="archivedTab" class="list-tab" type="button" role="tab" aria-selected="false" aria-controls="threadList" tabindex="-1"><!--copy:html.archivedTab.text-->已归档任务<!--/copy--></button>
+          <button id="refreshButton" class="icon-button compact" type="button" aria-label="刷新任务" data-copy-aria-label="html.refreshButton.aria-label">↻</button>
+        </div>
+        <div class="list-filter-row">
+          <label class="list-filter-label" for="threadFilter"><!--copy:html.refreshButton.text-->收件箱筛选<!--/copy--></label>
+          <select id="threadFilter" class="list-filter" aria-label="按任务状态筛选" data-copy-aria-label="html.threadFilter.aria-label">
+            <option value="all"><!--copy:html.threadFilter.text-->全部状态<!--/copy--></option>
+            <option value="unread"><!--copy:html.threadFilter.text2-->未读更新<!--/copy--></option>
+            <option value="active"><!--copy:html.threadFilter.text3-->运行中<!--/copy--></option>
+            <option value="waiting"><!--copy:html.threadFilter.text4-->等待操作<!--/copy--></option>
+            <option value="error"><!--copy:html.threadFilter.text5-->异常<!--/copy--></option>
+            <option value="idle"><!--copy:html.threadFilter.text6-->空闲<!--/copy--></option>
+            <option value="saved"><!--copy:html.threadFilter.text7-->已保存，未加载<!--/copy--></option>
+            <option value="unknown"><!--copy:html.threadFilter.text8-->状态待核实<!--/copy--></option>
+          </select>
+        </div>
+        <div class="list-filter-row">
+          <label class="list-filter-label" for="threadProjectFilter"><!--copy:html.threadFilter.text9-->项目<!--/copy--></label>
+          <select id="threadProjectFilter" class="list-filter" aria-label="按项目筛选" data-copy-aria-label="html.threadProjectFilter.aria-label">
+            <option value="all"><!--copy:html.threadProjectFilter.text-->全部项目<!--/copy--></option>
+          </select>
+        </div>
+        <div class="list-filter-row">
+          <label class="list-filter-label" for="threadTagFilter"><!--copy:html.threadProjectFilter.text2-->标签<!--/copy--></label>
+          <select id="threadTagFilter" class="list-filter" aria-label="按本机标签筛选" data-copy-aria-label="html.threadTagFilter.aria-label">
+            <option value="all"><!--copy:html.threadTagFilter.text-->全部标签<!--/copy--></option>
+          </select>
+        </div>
+        <div id="threadBatchActions" class="thread-batch-actions hidden" aria-live="polite">
+          <button id="selectVisibleThreadsButton" type="button"><!--copy:html.selectVisibleThreadsButton.text-->选择当前列表<!--/copy--></button>
+          <button id="markSelectedThreadsReadButton" type="button"><!--copy:html.markSelectedThreadsReadButton.text-->标记已读<!--/copy--></button>
+          <button id="archiveSelectedThreadsButton" type="button"><!--copy:html.archiveSelectedThreadsButton.text-->归档所选<!--/copy--></button>
+          <button id="clearSelectedThreadsButton" type="button" aria-label="清除任务选择" data-copy-aria-label="html.clearSelectedThreadsButton.aria-label">×</button>
         </div>
 
-        <div id="threadList" class="thread-list" aria-live="polite"></div>
-        <button id="loadMoreThreadsButton" class="load-more-threads hidden" type="button">加载更多任务</button>
+        <div id="threadList" class="thread-list" role="tabpanel" tabindex="0" aria-labelledby="recentTab"></div>
+        <button id="loadMoreThreadsButton" class="load-more-threads hidden" type="button"><!--copy:html.loadMoreThreadsButton.text-->加载更多任务<!--/copy--></button>
 
         <div class="sidebar-footer">
           <div class="sidebar-menu-grid">
-            <button id="serverFilesButton" class="sidebar-utility" type="button"><span aria-hidden="true">▤</span><span>服务器文件</span></button>
-            <button id="themeButton" class="sidebar-utility" type="button" aria-label="切换深浅色模式">
+            <button id="serverFilesButton" class="sidebar-utility" type="button"><span aria-hidden="true">▤</span><span><!--copy:html.serverFilesButton.text-->服务器文件<!--/copy--></span></button>
+            <button id="themeButton" class="sidebar-utility" type="button" aria-label="切换深浅色模式" data-copy-aria-label="html.themeButton.aria-label">
               <span id="themeIcon" aria-hidden="true">☾</span>
-              <span id="themeLabel">深/浅色模式</span>
+              <span id="themeLabel"><!--copy:html.themeLabel.text-->深/浅色模式<!--/copy--></span>
             </button>
-            <button id="helpButton" class="sidebar-utility" type="button"><span aria-hidden="true">?</span><span>使用帮助</span></button>
-            <button id="trustedDevicesButton" class="sidebar-utility" type="button"><span aria-hidden="true">◉</span><span>已登录设备管理</span></button>
-            <button id="logoutButton" class="sidebar-utility" type="button"><span aria-hidden="true">↪</span><span>退出当前设备</span></button>
-            <button id="refreshWebUiButton" class="sidebar-utility" type="button"><span aria-hidden="true">↻</span><span>刷新 Web UI</span></button>
+            <button id="helpButton" class="sidebar-utility" type="button"><span aria-hidden="true">?</span><span><!--copy:headings.codex_remote_guide-->使用帮助<!--/copy--></span></button>
+            <button id="trustedDevicesButton" class="sidebar-utility" type="button"><span aria-hidden="true">◉</span><span><!--copy:html.trustedDevicesButton.text-->已登录设备管理<!--/copy--></span></button>
+            <button id="logoutButton" class="sidebar-utility" type="button"><span aria-hidden="true">↪</span><span><!--copy:common.logoutCurrent-->退出当前设备<!--/copy--></span></button>
+            <button id="refreshWebUiButton" class="sidebar-utility" type="button"><span aria-hidden="true">↻</span><span><!--copy:html.refreshWebUiButton.text-->刷新 Web UI<!--/copy--></span></button>
+            <button id="notificationButton" class="sidebar-utility" type="button"><span aria-hidden="true">♢</span><span id="notificationLabel"><!--copy:html.notificationLabel.text-->浏览器通知<!--/copy--></span></button>
           </div>
           <div class="server-status">
             <span id="connectionDot" class="status-dot connecting"></span>
             <div class="server-status-copy">
-              <strong id="connectionLabel">正在连接…</strong>
+              <strong id="connectionLabel"><!--copy:html.connectionLabel.text-->正在连接…<!--/copy--></strong>
               <span class="status-separator" aria-hidden="true">·</span>
-              <span id="networkLabel">受控私有网络</span>
+              <span id="networkLabel"><!--copy:html.networkLabel.text-->受控私有网络<!--/copy--></span>
             </div>
           </div>
         </div>
       </aside>
 
-      <button id="sidebarBackdrop" class="sidebar-backdrop hidden" type="button" aria-label="关闭侧栏"></button>
+      <button id="sidebarBackdrop" class="sidebar-backdrop hidden" type="button" tabindex="-1" aria-hidden="true" aria-label="关闭侧栏" data-copy-aria-label="html.closeSidebarButton.aria-label"></button>
 
       <main class="main-panel">
         <header class="topbar">
-          <button id="menuButton" class="icon-button mobile-only" type="button" aria-label="打开任务列表">
+          <button id="menuButton" class="icon-button mobile-only" type="button" aria-label="打开任务列表" aria-controls="sidebar" aria-expanded="false" data-copy-aria-label="html.menuButton.aria-label">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
           </button>
           <div class="topbar-title">
             <h1 id="chatTitle">Codex Remote</h1>
-            <p id="chatMeta">点击左侧主菜单查看历史会话</p>
+            <p id="chatMeta"><!--copy:app.openThread.textContent-->点击左侧主菜单查看历史任务<!--/copy--></p>
           </div>
           <div class="topbar-actions">
-            <button id="contextButton" class="icon-button hidden" type="button" aria-label="任务详情">
+            <button id="contextButton" class="icon-button hidden" type="button" aria-label="任务详情" aria-controls="contextPanel" aria-expanded="false" data-copy-aria-label="html.contextButton.aria-label">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3" /></svg>
               <span id="changeCountBadge" class="button-badge hidden">0</span>
             </button>
             <details id="chatMenu" class="menu-popover hidden">
-              <summary class="icon-button" aria-label="更多操作">⋮</summary>
+              <summary class="icon-button" aria-label="更多操作" data-copy-aria-label="html.chatMenu.aria-label">⋮</summary>
               <div class="popover-menu">
-                <button id="renameThreadButton" type="button">重命名</button>
-                <button id="pinThreadButton" type="button">置顶</button>
-                <button id="releaseThreadButton" type="button">停止实时跟进</button>
-                <button id="archiveThreadButton" type="button">归档</button>
-                <button id="goalThreadButton" type="button">创建 Goal</button>
-                <button id="copyThreadIdButton" type="button">复制任务 ID</button>
+                <button id="renameThreadButton" type="button"><!--copy:common.rename-->重命名<!--/copy--></button>
+                <button id="pinThreadButton" type="button"><!--copy:common.pin-->置顶<!--/copy--></button>
+                <button id="releaseThreadButton" type="button"><!--copy:html.releaseThreadButton.text-->停止实时跟进<!--/copy--></button>
+                <button id="archiveThreadButton" type="button"><!--copy:common.archive-->归档<!--/copy--></button>
+                <button id="goalThreadButton" type="button"><!--copy:common.createGoal-->创建 Goal<!--/copy--></button>
+                <button id="copyThreadIdButton" type="button"><!--copy:html.copyThreadIdButton.text-->复制任务 ID<!--/copy--></button>
               </div>
             </details>
           </div>
@@ -134,18 +166,18 @@
 
         <section id="emptyState" class="empty-state">
           <div class="empty-orbit"><img src="/icon.svg" alt="" /></div>
-          <h2>服务器随时待命</h2>
-          <p>即使 Windows 笔记本已经关机，你仍可以从手机继续服务器上的 Codex 工作。</p>
-          <button id="emptyNewTaskButton" class="primary-button" type="button">创建新任务</button>
+          <h2><!--copy:html.emptyState.text-->服务器随时待命<!--/copy--></h2>
+          <p><!--copy:html.emptyState.text2-->即使 Windows 笔记本已经关机，你仍可以从手机继续服务器上的 Codex 工作。<!--/copy--></p>
+          <button id="emptyNewTaskButton" class="primary-button" type="button"><!--copy:html.emptyNewTaskButton.text-->创建新任务<!--/copy--></button>
           <div class="suggestion-grid">
             <button class="suggestion" type="button" data-prompt="检查当前项目的状态，概括最近的改动和待处理问题。">
-              <span>项目巡检</span><small>总结代码和待办</small>
+              <span><!--copy:html.emptyNewTaskButton.text2-->项目巡检<!--/copy--></span><small><!--copy:html.emptyNewTaskButton.text3-->总结代码和待办<!--/copy--></small>
             </button>
             <button class="suggestion" type="button" data-prompt="运行项目测试，诊断失败原因并修复问题。">
-              <span>运行测试</span><small>诊断并修复失败</small>
+              <span><!--copy:html.emptyNewTaskButton.text4-->运行测试<!--/copy--></span><small><!--copy:html.emptyNewTaskButton.text5-->诊断并修复失败<!--/copy--></small>
             </button>
             <button class="suggestion" type="button" data-prompt="查看服务器当前状态，找出异常服务或资源占用。">
-              <span>服务器检查</span><small>服务与资源状态</small>
+              <span><!--copy:html.emptyNewTaskButton.text6-->服务器检查<!--/copy--></span><small><!--copy:html.emptyNewTaskButton.text7-->服务与资源状态<!--/copy--></small>
             </button>
           </div>
         </section>
@@ -154,374 +186,425 @@
           <div class="conversation-stage">
             <div id="approvalArea" class="approval-area"></div>
             <section id="goalBar" class="goal-bar hidden" aria-live="polite"></section>
-            <div id="messages" class="messages" aria-live="polite">
+            <div id="messages" class="messages" role="log" aria-label="对话记录" aria-live="off" data-copy-aria-label="html.messages.aria-label">
               <div id="historyControls" class="history-controls hidden">
-                <button id="loadMoreHistoryButton" type="button">加载更多历史对话</button>
-                <button id="loadCompleteHistoryButton" type="button">加载完整历史对话</button>
-                <button id="historyNodesButton" type="button">显示历史对话节点</button>
+                <button id="loadMoreHistoryButton" type="button"><!--copy:html.loadMoreHistoryButton.text-->加载更多历史对话<!--/copy--></button>
+                <button id="loadCompleteHistoryButton" type="button"><!--copy:html.loadCompleteHistoryButton.text-->加载完整历史对话<!--/copy--></button>
+                <button id="historyNodesButton" type="button"><!--copy:html.historyNodesButton.text-->显示历史对话节点<!--/copy--></button>
               </div>
             </div>
-            <button id="scrollBottomButton" class="scroll-bottom hidden" type="button" aria-label="滚动到底部">↓</button>
+            <button id="scrollBottomButton" class="scroll-bottom hidden" type="button" aria-label="滚动到底部" data-copy-aria-label="html.scrollBottomButton.aria-label">↓</button>
 
             <div class="composer-zone">
+              <div id="writeQueueStatus" class="write-queue-status hidden" role="status" aria-live="polite" aria-label="正在提交的操作" data-copy-aria-label="html.writeQueueStatus.aria-label"></div>
               <form id="composer" class="composer">
-                <textarea id="promptInput" rows="1" placeholder="继续告诉 Codex 要做什么…" required></textarea>
+                <textarea id="promptInput" rows="1" aria-label="发送给 Codex 的消息" aria-describedby="composerHint" placeholder="继续告诉 Codex 要做什么…" required data-copy-aria-label="html.promptInput.aria-label" data-copy-placeholder="html.promptInput.placeholder"></textarea>
                 <div id="attachmentTray" class="attachment-tray hidden" aria-live="polite"></div>
                 <div class="composer-toolbar">
                   <div class="composer-options">
-                    <button id="attachButton" class="option-chip attachment-button" type="button">＋ 附件</button>
+                    <button id="attachButton" class="option-chip attachment-button" type="button"><!--copy:html.attachButton.text-->＋ 附件<!--/copy--></button>
                     <input id="fileInput" class="hidden" type="file" multiple />
                     <input id="photoInput" class="hidden" type="file" accept="image/*" multiple />
-                    <button id="modelChip" class="option-chip" type="button">默认模型</button>
-                    <button id="effortChip" class="option-chip" type="button">默认推理</button>
+                    <button id="modelChip" class="option-chip" type="button"><!--copy:common.defaultModel-->默认模型<!--/copy--></button>
+                    <button id="effortChip" class="option-chip" type="button"><!--copy:html.effortChip.text-->默认推理<!--/copy--></button>
                   </div>
                   <div class="composer-submit-actions">
-                    <button id="stopButton" class="stop-button hidden" type="button" aria-label="中止当前任务">
-                      <span class="stop-square"></span><span>中止</span>
+                    <button id="stopButton" class="stop-button hidden" type="button" aria-label="停止当前任务" data-copy-aria-label="html.stopButton.aria-label">
+                      <span class="stop-square"></span><span><!--copy:html.stopButton.text-->停止<!--/copy--></span>
                     </button>
-                    <button id="sendButton" type="submit" class="send-button" aria-label="发送">
+                    <button id="sendButton" type="submit" class="send-button" aria-label="发送" data-copy-aria-label="html.sendButton.aria-label">
                       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19 0-14m-6 6 6-6 6 6" /></svg>
                     </button>
                   </div>
                 </div>
               </form>
-              <p id="composerHint" class="composer-hint">Codex 可能会执行命令或修改文件，请留意审批请求。</p>
+              <p id="composerHint" class="composer-hint"><!--copy:html.composerHint.text-->Codex 可能会执行命令或修改文件，请留意审批请求。<!--/copy--></p>
             </div>
           </div>
 
-          <aside id="contextPanel" class="context-panel" aria-label="任务详情">
+          <aside id="contextPanel" class="context-panel" aria-label="任务详情" tabindex="-1" inert aria-hidden="true" data-copy-aria-label="html.contextButton.aria-label">
             <div class="context-heading">
-              <div class="context-tabs" role="tablist">
-                <button id="changesTab" class="context-tab active" type="button" role="tab">变更</button>
-                <button id="infoTab" class="context-tab" type="button" role="tab">信息</button>
+              <div class="context-tabs" role="tablist" aria-label="任务详情分类" aria-orientation="horizontal" data-copy-aria-label="html.contextPanel.aria-label">
+                <button id="changesTab" class="context-tab active" type="button" role="tab" aria-selected="true" aria-controls="changesPanel" tabindex="0"><!--copy:html.changesTab.text-->变更<!--/copy--></button>
+                <button id="infoTab" class="context-tab" type="button" role="tab" aria-selected="false" aria-controls="infoPanel" tabindex="-1"><!--copy:html.infoTab.text-->信息<!--/copy--></button>
               </div>
-              <button id="closeContextButton" class="icon-button" type="button" aria-label="关闭详情">×</button>
+              <button id="closeContextButton" class="icon-button" type="button" aria-label="关闭详情" data-copy-aria-label="html.closeContextButton.aria-label">×</button>
             </div>
-            <div id="changesPanel" class="context-content"></div>
-            <div id="infoPanel" class="context-content hidden"></div>
+            <div id="changesPanel" class="context-content" role="tabpanel" tabindex="0" aria-labelledby="changesTab"></div>
+            <div id="infoPanel" class="context-content hidden" role="tabpanel" tabindex="0" aria-labelledby="infoTab" aria-hidden="true"></div>
           </aside>
         </section>
       </main>
     </div>
 
-    <dialog id="newTaskDialog">
+    <dialog id="newTaskDialog" aria-labelledby="newTaskDialogTitle">
       <form id="newTaskForm" class="dialog-form">
         <div class="dialog-heading">
-          <div><span class="eyebrow">NEW TASK</span><h2>新建 Codex 任务</h2></div>
-          <button type="button" id="closeDialogButton" class="icon-button" aria-label="关闭">×</button>
+          <div><span class="eyebrow"><!--copy:headings.new_task-->新建任务<!--/copy--></span><h2 id="newTaskDialogTitle"><!--copy:html.newTaskDialogTitle.text-->新建 Codex 任务<!--/copy--></h2></div>
+          <button type="button" id="closeDialogButton" class="icon-button" aria-label="关闭" data-copy-aria-label="common.close">×</button>
         </div>
         <label class="field full-span">
-          <span>任务内容</span>
-          <textarea id="newPromptInput" name="prompt" rows="6" required placeholder="描述希望 Codex 在服务器上完成的工作…"></textarea>
+          <span><!--copy:html.closeDialogButton.text-->任务内容<!--/copy--></span>
+          <textarea id="newPromptInput" name="prompt" rows="6" required placeholder="描述希望 Codex 在服务器上完成的工作…" data-copy-placeholder="html.newPromptInput.placeholder"></textarea>
         </label>
         <div class="field full-span">
-          <span>工作目录</span>
+          <label for="cwdInput"><!--copy:common.workDirectory-->工作目录<!--/copy--></label>
           <div class="cwd-picker-row">
             <input id="cwdInput" name="cwd" autocomplete="off" required />
-            <button id="browseDirectoryButton" class="browse-directory-button" type="button">浏览</button>
+            <button id="browseDirectoryButton" class="browse-directory-button" type="button"><!--copy:html.browseDirectoryButton.text-->浏览<!--/copy--></button>
           </div>
         </div>
         <div class="field full-span">
-          <span>附件（可选）</span>
+          <span><!--copy:html.browseDirectoryButton.text2-->附件（可选）<!--/copy--></span>
           <div class="new-upload-picker">
-            <button id="newAttachButton" class="secondary-upload-button" type="button">＋ 添加附件</button>
-            <small>文件会先保存到上述工作目录，再启动任务。</small>
+            <button id="newAttachButton" class="secondary-upload-button" type="button"><!--copy:html.newAttachButton.text-->＋ 添加附件<!--/copy--></button>
+            <small><!--copy:html.newAttachButton.text2-->文件会先保存到上述工作目录，再启动任务。<!--/copy--></small>
           </div>
           <input id="newFileInput" class="hidden" type="file" multiple />
           <input id="newPhotoInput" class="hidden" type="file" accept="image/*" multiple />
           <div id="newAttachmentTray" class="attachment-tray dialog-attachments hidden" aria-live="polite"></div>
         </div>
         <label class="field">
-          <span>模型</span>
-          <select id="newModelSelect" name="model"><option value="">默认模型</option></select>
+          <span><!--copy:common.model-->模型<!--/copy--></span>
+          <select id="newModelSelect" name="model"><option value=""><!--copy:common.defaultModel-->默认模型<!--/copy--></option></select>
         </label>
         <label class="field">
-          <span>推理强度</span>
-          <select id="newEffortSelect" name="effort"><option value="">模型默认</option></select>
+          <span><!--copy:common.effort-->推理强度<!--/copy--></span>
+          <select id="newEffortSelect" name="effort"><option value=""><!--copy:common.modelDefault-->模型默认<!--/copy--></option></select>
         </label>
         <label class="field full-span">
-          <span>访问权限</span>
+          <span><!--copy:html.newEffortSelect.text-->访问权限<!--/copy--></span>
           <select id="newPermissionSelect" name="permissionPreset">
-            <option value="request">请求批准</option>
-            <option value="auto">帮我批准</option>
-            <option value="full">完全批准</option>
+            <option value="request"><!--copy:common.permissionRequest-->请求批准<!--/copy--></option>
+            <option value="auto"><!--copy:common.permissionAuto-->帮我批准<!--/copy--></option>
+            <option value="full"><!--copy:common.permissionFull-->完全批准<!--/copy--></option>
           </select>
         </label>
-        <p class="hint full-span">“请求批准”由你处理审批；“帮我批准”由 Codex 自动审阅；“完全批准”允许直接访问服务器环境，请谨慎使用。</p>
+        <p class="hint full-span"><!--copy:html.newPermissionSelect.text-->“请求批准”由你处理审批；“帮我批准”由 Codex 自动审阅；“完全批准”允许直接访问服务器环境，请谨慎使用。<!--/copy--></p>
         <details id="newGoalDetails" class="goal-create full-span">
-          <summary>设置长期 Goal（可选）</summary>
+          <summary><!--copy:html.newGoalDetails.text-->设置长期 Goal（可选）<!--/copy--></summary>
           <div class="goal-create-grid">
-            <label class="field full-span"><span>目标描述</span><textarea id="newGoalObjective" rows="3" maxlength="4000" placeholder="例如：完成论文结果复核，并保留可重复运行的验证流程"></textarea></label>
-            <label class="field"><span>Token 预算（可选）</span><input id="newGoalBudget" type="number" min="0" step="1" inputmode="numeric" placeholder="不限制" /></label>
-            <p class="hint">创建任务后会立即绑定 Goal；之后可在任务顶部编辑、暂停、继续或结束。</p>
+            <label class="field full-span"><span><!--copy:html.newGoalDetails.text2-->目标描述<!--/copy--></span><textarea id="newGoalObjective" rows="3" maxlength="4000" placeholder="例如：完成论文结果复核，并保留可重复运行的验证流程" data-copy-placeholder="html.newGoalObjective.placeholder"></textarea></label>
+            <label class="field"><span><!--copy:html.newGoalObjective.text-->token 预算（可选）<!--/copy--></span><input id="newGoalBudget" type="number" min="0" step="1" inputmode="numeric" placeholder="不限制" data-copy-placeholder="common.noLimit" /></label>
+            <p class="hint"><!--copy:html.newGoalBudget.text-->创建任务后会立即绑定 Goal；之后可在任务顶部编辑、暂停、继续或结束。<!--/copy--></p>
           </div>
         </details>
-        <button type="submit" class="primary-button full-width full-span">开始任务</button>
+        <button type="submit" class="primary-button full-width full-span"><!--copy:common.startTask-->开始任务<!--/copy--></button>
       </form>
     </dialog>
 
-    <dialog id="directoryDialog" class="directory-dialog">
+    <dialog id="directoryDialog" class="directory-dialog" aria-labelledby="directoryDialogTitle">
       <section class="directory-picker">
         <header class="directory-heading">
-          <div><span class="eyebrow">SERVER DIRECTORY</span><h2 id="directoryDialogTitle">选择工作目录</h2></div>
-          <button id="closeDirectoryButton" class="icon-button" type="button" aria-label="关闭目录选择器">×</button>
+          <div><span class="eyebrow"><!--copy:common.workDirectory-->工作目录<!--/copy--></span><h2 id="directoryDialogTitle"><!--copy:directory.openDirectoryBrowser.textContent-->选择工作目录<!--/copy--></h2></div>
+          <button id="closeDirectoryButton" class="icon-button" type="button" aria-label="关闭目录选择器" data-copy-aria-label="html.closeDirectoryButton.aria-label">×</button>
         </header>
 
-        <div id="directoryRoots" class="directory-roots hidden" aria-label="授权根目录"></div>
-        <nav id="directoryBreadcrumbs" class="directory-breadcrumbs" aria-label="当前路径"></nav>
+        <div id="directoryRoots" class="directory-roots hidden" aria-label="授权根目录" data-copy-aria-label="html.directoryRoots.aria-label"></div>
+        <nav id="directoryBreadcrumbs" class="directory-breadcrumbs" aria-label="当前路径" data-copy-aria-label="html.directoryBreadcrumbs.aria-label"></nav>
 
         <div class="directory-tools">
           <div class="directory-search">
             <span aria-hidden="true">⌕</span>
-            <input id="directorySearch" type="search" placeholder="筛选当前目录" autocomplete="off" />
+            <input id="directorySearch" type="search" aria-label="筛选当前目录" placeholder="筛选当前目录" autocomplete="off" data-copy-aria-label="html.directorySearch.aria-label" data-copy-placeholder="html.directorySearch.aria-label" />
           </div>
           <label class="hidden-directory-toggle">
             <input id="showHiddenDirectories" type="checkbox" />
-            <span>隐藏目录</span>
+            <span><!--copy:html.showHiddenDirectories.text-->显示隐藏目录<!--/copy--></span>
           </label>
         </div>
 
         <div class="directory-current">
-          <span>当前位置</span>
+          <span><!--copy:html.showHiddenDirectories.text2-->当前位置<!--/copy--></span>
           <code id="directoryCurrentPath">—</code>
         </div>
         <div id="directoryList" class="directory-list" aria-live="polite"></div>
-        <p id="directoryLimitNotice" class="directory-limit hidden">当前目录项目较多，仅显示前 500 个子目录。</p>
+        <p id="directoryLimitNotice" class="directory-limit hidden"><!--copy:html.directoryLimitNotice.text-->当前目录项目较多，仅显示前 500 个子目录。<!--/copy--></p>
 
         <form id="newDirectoryForm" class="directory-create hidden">
           <label>
-            <span>新文件夹名称</span>
-            <input id="newDirectoryInput" maxlength="120" autocomplete="off" required placeholder="例如：new-project" />
+            <span><!--copy:html.newDirectoryForm.text-->新文件夹名称<!--/copy--></span>
+            <input id="newDirectoryInput" maxlength="120" autocomplete="off" required placeholder="例如：new-project" data-copy-placeholder="html.newDirectoryInput.placeholder" />
           </label>
           <div>
-            <button id="cancelNewDirectoryButton" type="button">取消</button>
-            <button class="primary-button" type="submit">创建并进入</button>
+            <button id="cancelNewDirectoryButton" type="button"><!--copy:common.cancel-->取消<!--/copy--></button>
+            <button class="primary-button" type="submit"><!--copy:directory.createNewDirectory.textContent-->创建并进入<!--/copy--></button>
           </div>
         </form>
 
         <footer class="directory-actions">
-          <button id="showNewDirectoryButton" class="secondary-upload-button" type="button">＋ 新建文件夹</button>
-          <button id="chooseDirectoryButton" class="primary-button" type="button">选择当前目录</button>
+          <button id="showNewDirectoryButton" class="secondary-upload-button" type="button"><!--copy:html.showNewDirectoryButton.text-->＋ 新建文件夹<!--/copy--></button>
+          <button id="chooseDirectoryButton" class="primary-button" type="button"><!--copy:html.chooseDirectoryButton.text-->选择当前目录<!--/copy--></button>
         </footer>
       </section>
     </dialog>
 
-    <dialog id="fileBrowserDialog" class="file-browser-dialog">
+    <dialog id="fileBrowserDialog" class="file-browser-dialog" aria-labelledby="fileBrowserDialogTitle">
       <section class="file-browser">
         <header class="directory-heading">
-          <div><span class="eyebrow">SERVER FILES</span><h2>服务器文件</h2></div>
-          <button id="closeFileBrowserButton" class="icon-button" type="button" aria-label="关闭服务器文件">×</button>
+          <div><span class="eyebrow"><!--copy:headings.server_files-->文件管理<!--/copy--></span><h2 id="fileBrowserDialogTitle"><!--copy:html.serverFilesButton.text-->服务器文件<!--/copy--></h2></div>
+          <button id="closeFileBrowserButton" class="icon-button" type="button" aria-label="关闭服务器文件" data-copy-aria-label="html.closeFileBrowserButton.aria-label">×</button>
         </header>
         <div id="fileBrowserRoots" class="directory-roots hidden file-browser-roots" aria-hidden="true"></div>
         <div class="directory-tools">
           <div class="directory-search">
             <span aria-hidden="true">⌕</span>
-            <input id="fileBrowserSearch" type="search" placeholder="搜索当前目录" autocomplete="off" />
+            <input id="fileBrowserSearch" type="search" aria-label="搜索服务器文件" placeholder="搜索当前目录" autocomplete="off" data-copy-aria-label="html.fileBrowserSearch.aria-label" data-copy-placeholder="html.fileBrowserSearch.placeholder" />
           </div>
+          <label class="hidden-directory-toggle file-search-scope">
+            <input id="fileBrowserSearchAll" type="checkbox" />
+            <span><!--copy:html.fileBrowserSearchAll.text-->搜索授权范围<!--/copy--></span>
+          </label>
           <label class="hidden-directory-toggle">
             <input id="showHiddenFiles" type="checkbox" />
-            <span>隐藏文件</span>
+            <span><!--copy:html.showHiddenFiles.text-->显示隐藏文件<!--/copy--></span>
           </label>
         </div>
         <div class="directory-current">
-          <span>当前位置</span>
+          <span><!--copy:html.showHiddenDirectories.text2-->当前位置<!--/copy--></span>
           <code id="fileBrowserCurrentPath">—</code>
         </div>
         <div id="fileBrowserList" class="file-browser-list" aria-live="polite"></div>
-        <p id="fileBrowserLimitNotice" class="directory-limit hidden">当前目录项目较多，仅显示前 500 项；可使用搜索缩小范围。</p>
+        <p id="fileBrowserLimitNotice" class="directory-limit hidden"><!--copy:files.renderFileBrowserList.textContent-->当前目录项目较多，仅显示前 500 项；可使用搜索缩小范围。<!--/copy--></p>
+        <div id="fileBrowserUploadStatus" class="file-browser-upload-status hidden" role="progressbar" aria-live="polite" aria-valuemin="0" aria-valuemax="100"></div>
         <footer class="file-browser-actions">
           <input id="fileBrowserUploadInput" class="hidden" type="file" multiple />
-          <button id="uploadToDirectoryButton" class="secondary-upload-button" type="button">＋ 上传</button>
-          <button id="newFileBrowserFolderButton" class="secondary-upload-button" type="button">＋ 文件夹</button>
-          <button id="refreshFileBrowserButton" class="secondary-upload-button" type="button">↻ 刷新</button>
-          <button id="newTaskFromDirectoryButton" class="primary-button" type="button">在此目录新建任务</button>
+          <button id="uploadToDirectoryButton" class="secondary-upload-button" type="button"><!--copy:files.syncBrowserUploadControls.textContent3-->＋ 上传<!--/copy--></button>
+          <button id="pauseFileBrowserUploadButton" class="secondary-upload-button hidden" type="button"><!--copy:files.syncBrowserUploadControls.textContent-->暂停上传<!--/copy--></button>
+          <button id="newFileBrowserFolderButton" class="secondary-upload-button" type="button"><!--copy:html.newFileBrowserFolderButton.text-->＋ 文件夹<!--/copy--></button>
+          <button id="manageAccessRootsButton" class="secondary-upload-button" type="button"><!--copy:html.manageAccessRootsButton.text-->管理授权目录<!--/copy--></button>
+          <button id="copySelectedFilesButton" class="secondary-upload-button" type="button" disabled><!--copy:html.copySelectedFilesButton.text-->复制所选<!--/copy--></button>
+          <button id="moveSelectedFilesButton" class="secondary-upload-button" type="button" disabled><!--copy:html.moveSelectedFilesButton.text-->移动所选<!--/copy--></button>
+          <button id="deleteSelectedFilesButton" class="danger-button" type="button" disabled><!--copy:files.syncFileSelectionControls.textContent-->删除所选<!--/copy--></button>
+          <button id="refreshFileBrowserButton" class="secondary-upload-button" type="button"><!--copy:html.refreshFileBrowserButton.text-->↻ 刷新<!--/copy--></button>
+          <button id="newTaskFromDirectoryButton" class="primary-button" type="button"><!--copy:html.newTaskFromDirectoryButton.text-->在此目录新建任务<!--/copy--></button>
         </footer>
       </section>
     </dialog>
 
-    <dialog id="devicesDialog" class="devices-dialog">
+    <dialog id="accessRootsDialog" class="small-dialog" aria-labelledby="accessRootsDialogTitle" aria-describedby="accessRootsDialogDescription">
+      <section class="access-roots-panel">
+        <div class="dialog-heading">
+          <div><span class="eyebrow"><!--copy:headings.authorized_directories-->目录授权<!--/copy--></span><h2 id="accessRootsDialogTitle"><!--copy:html.manageAccessRootsButton.text-->管理授权目录<!--/copy--></h2></div>
+          <button id="closeAccessRootsButton" class="icon-button" type="button" aria-label="关闭授权目录管理" data-copy-aria-label="html.closeAccessRootsButton.aria-label">×</button>
+        </div>
+        <p id="accessRootsDialogDescription" class="credentials-intro"><!--copy:html.accessRootsDialogDescription.text-->基础授权目录来自服务器配置，不能在这里移除。新增目录只会授权给当前 Web UI 服务，不会修改 Codex daemon 或其他用户。<!--/copy--></p>
+        <div id="accessRootsList" class="access-roots-list" aria-live="polite"></div>
+        <form id="accessRootForm" class="access-root-form">
+          <label class="field"><span><!--copy:html.accessRootForm.text-->新增目录的绝对路径<!--/copy--></span><input id="accessRootPath" type="text" inputmode="url" maxlength="8192" autocomplete="off" placeholder="例如：/home/user/project" required data-copy-placeholder="html.accessRootPath.placeholder" /></label>
+          <button class="primary-button full-width" type="submit"><!--copy:html.accessRootPath.text-->确认并加入目录<!--/copy--></button>
+        </form>
+      </section>
+    </dialog>
+
+    <dialog id="notificationDialog" class="small-dialog" aria-labelledby="notificationDialogTitle" aria-describedby="notificationStatus">
+      <section class="confirm-panel">
+        <div class="dialog-heading">
+          <h2 id="notificationDialogTitle"><!--copy:html.notificationDialogTitle.text-->通知设置<!--/copy--></h2>
+          <button id="closeNotificationButton" class="icon-button" type="button" aria-label="关闭通知设置" data-copy-aria-label="html.closeNotificationButton.aria-label">×</button>
+        </div>
+        <p id="notificationStatus" class="confirm-message" role="status"><!--copy:push.createPushNotificationController.reason-->正在检查后台推送…<!--/copy--></p>
+        <p class="confirm-message"><!--copy:html.notificationStatus.text-->页面通知需要网页保持运行。后台推送通过浏览器提供的推送服务发送；系统省电、网络和通知设置可能影响送达。<!--/copy--></p>
+        <div class="confirm-actions notification-actions">
+          <button id="enablePageNotificationButton" class="secondary-button" type="button"><!--copy:html.enablePageNotificationButton.text-->开启页面通知<!--/copy--></button>
+          <button id="enablePushButton" class="primary-button" type="button" disabled><!--copy:html.enablePushButton.text-->开启后台推送<!--/copy--></button>
+          <button id="disablePushButton" class="secondary-button" type="button" disabled><!--copy:html.disablePushButton.text-->关闭后台推送<!--/copy--></button>
+        </div>
+      </section>
+    </dialog>
+
+    <dialog id="devicesDialog" class="devices-dialog" aria-labelledby="devicesDialogTitle" aria-describedby="devicesDialogDescription">
       <section class="devices-panel">
         <header class="directory-heading">
-          <div><span class="eyebrow">SIGNED-IN DEVICES</span><h2>已登录设备管理</h2></div>
-          <button id="closeDevicesButton" class="icon-button" type="button" aria-label="关闭已登录设备管理">×</button>
+          <div><span class="eyebrow"><!--copy:headings.signed-in_devices-->设备管理<!--/copy--></span><h2 id="devicesDialogTitle"><!--copy:html.trustedDevicesButton.text-->已登录设备管理<!--/copy--></h2></div>
+          <button id="closeDevicesButton" class="icon-button" type="button" aria-label="关闭已登录设备管理" data-copy-aria-label="html.closeDevicesButton.aria-label">×</button>
         </header>
-        <p class="devices-intro">这里显示当前仍有效的可信设备，可以重命名、撤销单台设备，或注销其他/全部设备。撤销后，该设备需要重新输入密码。</p>
+        <p id="devicesDialogDescription" class="devices-intro"><!--copy:html.devicesDialogDescription.text-->这里显示当前仍有效的可信设备，可以重命名、撤销单台设备，或退出其他/全部设备。撤销后，该设备需要重新输入密码。<!--/copy--></p>
         <div id="devicesList" class="devices-list" aria-live="polite"></div>
         <footer class="devices-actions">
-          <button id="refreshDevicesButton" class="secondary-upload-button" type="button">↻ 刷新</button>
-          <button id="logoutOtherDevicesButton" class="danger-button" type="button">注销其他设备</button>
-          <button id="logoutAllButton" class="danger-button" type="button">注销全部设备</button>
-          <button id="changeCredentialsButton" class="secondary-upload-button" type="button">修改用户名或密码</button>
+          <button id="refreshDevicesButton" class="secondary-upload-button" type="button"><!--copy:html.refreshFileBrowserButton.text-->↻ 刷新<!--/copy--></button>
+          <button id="logoutOtherDevicesButton" class="danger-button" type="button"><!--copy:common.logoutOther-->退出其他设备<!--/copy--></button>
+          <button id="logoutAllButton" class="danger-button" type="button"><!--copy:common.logoutAll-->退出全部设备<!--/copy--></button>
+          <button id="changeCredentialsButton" class="secondary-upload-button" type="button"><!--copy:html.changeCredentialsLoginButton.text-->修改用户名或密码<!--/copy--></button>
         </footer>
       </section>
     </dialog>
 
-    <dialog id="credentialsDialog" class="small-dialog">
+    <dialog id="credentialsDialog" class="small-dialog" aria-labelledby="credentialsDialogTitle" aria-describedby="credentialsDialogDescription">
       <form id="credentialsForm" class="dialog-form" autocomplete="off">
         <div class="dialog-heading">
-          <div><span class="eyebrow">ACCOUNT SECURITY</span><h2>修改用户名或密码</h2></div>
-          <button id="closeCredentialsButton" class="icon-button" type="button" aria-label="关闭修改用户名或密码">×</button>
+          <div><span class="eyebrow"><!--copy:headings.account_security-->账号安全<!--/copy--></span><h2 id="credentialsDialogTitle"><!--copy:html.changeCredentialsLoginButton.text-->修改用户名或密码<!--/copy--></h2></div>
+          <button id="closeCredentialsButton" class="icon-button" type="button" aria-label="关闭修改用户名或密码" data-copy-aria-label="html.closeCredentialsButton.aria-label">×</button>
         </div>
-        <p class="credentials-intro">请先验证当前用户名和密码。新用户名或新密码至少填写一项，留空的项目保持不变。保存后所有已登录设备都会退出，需要使用新凭据重新登录。</p>
-        <label class="field"><span>当前用户名</span><input id="currentUsernameInput" name="currentUsername" autocomplete="username" required /></label>
-        <label class="field"><span>当前密码</span><input id="currentPasswordInput" name="currentPassword" type="password" autocomplete="current-password" required /></label>
-        <label class="field"><span>新用户名（不修改可留空）</span><input id="newUsernameInput" name="newUsername" autocomplete="username" maxlength="120" /></label>
-        <label class="field"><span>新密码（不修改可留空）</span><input id="newPasswordInput" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="4096" /></label>
-        <label class="field"><span>确认新密码</span><input id="confirmNewPasswordInput" name="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="4096" /></label>
+        <p id="credentialsDialogDescription" class="credentials-intro"><!--copy:html.credentialsDialogDescription.text-->请先验证当前用户名和密码。新用户名或新密码至少填写一项，留空的项目保持不变。保存后所有已登录设备都会退出，需要使用新凭据重新登录。<!--/copy--></p>
+        <label class="field"><span><!--copy:html.credentialsDialogDescription.text2-->当前用户名<!--/copy--></span><input id="currentUsernameInput" name="currentUsername" autocomplete="username" required /></label>
+        <label class="field"><span><!--copy:html.currentUsernameInput.text-->当前密码<!--/copy--></span><input id="currentPasswordInput" name="currentPassword" type="password" autocomplete="current-password" required /></label>
+        <label class="field"><span><!--copy:html.currentPasswordInput.text-->新用户名（不修改可留空）<!--/copy--></span><input id="newUsernameInput" name="newUsername" autocomplete="username" maxlength="120" /></label>
+        <label class="field"><span><!--copy:html.newUsernameInput.text-->新密码（不修改可留空）<!--/copy--></span><input id="newPasswordInput" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="4096" /></label>
+        <label class="field"><span><!--copy:html.newPasswordInput.text-->确认新密码<!--/copy--></span><input id="confirmNewPasswordInput" name="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" maxlength="4096" /></label>
         <p id="credentialsError" class="login-error hidden" role="alert"></p>
-        <button id="saveCredentialsButton" class="primary-button full-width" type="submit">保存并重新登录</button>
+        <button id="saveCredentialsButton" class="primary-button full-width" type="submit"><!--copy:devices.saveCredentials.textContent-->保存并重新登录<!--/copy--></button>
       </form>
     </dialog>
 
-    <dialog id="threadActionDialog" class="thread-action-dialog">
+    <dialog id="threadActionDialog" class="thread-action-dialog" aria-labelledby="threadActionTitle">
       <section class="thread-action-sheet">
         <div class="thread-action-heading">
-          <strong id="threadActionTitle">任务操作</strong>
-          <button id="closeThreadActionButton" class="icon-button" type="button" aria-label="关闭任务操作">×</button>
+          <strong id="threadActionTitle"><!--copy:html.threadActionTitle.text-->任务操作<!--/copy--></strong>
+          <button id="closeThreadActionButton" class="icon-button" type="button" aria-label="关闭任务操作" data-copy-aria-label="html.closeThreadActionButton.aria-label">×</button>
         </div>
-        <button id="actionPinThreadButton" type="button">置顶</button>
-        <button id="actionRenameThreadButton" type="button">重命名</button>
-        <button id="actionCopyThreadIdButton" type="button">复制任务 ID</button>
-        <button id="actionArchiveThreadButton" class="danger" type="button">归档</button>
+        <button id="actionPinThreadButton" type="button"><!--copy:common.pin-->置顶<!--/copy--></button>
+        <button id="actionRenameThreadButton" type="button"><!--copy:common.rename-->重命名<!--/copy--></button>
+        <button id="actionCopyThreadIdButton" type="button"><!--copy:html.copyThreadIdButton.text-->复制任务 ID<!--/copy--></button>
+        <button id="actionArchiveThreadButton" class="danger" type="button"><!--copy:common.archive-->归档<!--/copy--></button>
       </section>
     </dialog>
 
-    <dialog id="confirmDialog" class="small-dialog">
+    <dialog id="confirmDialog" class="small-dialog" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
       <section class="confirm-panel">
         <div class="dialog-heading">
-          <div><span id="confirmEyebrow" class="eyebrow">CONFIRM ACTION</span><h2 id="confirmTitle">确认操作</h2></div>
-          <button id="closeConfirmButton" class="icon-button" type="button" aria-label="取消">×</button>
+          <div><span id="confirmEyebrow" class="eyebrow"><!--copy:common.confirmAction-->确认操作<!--/copy--></span><h2 id="confirmTitle"><!--copy:common.confirmAction-->确认操作<!--/copy--></h2></div>
+          <button id="closeConfirmButton" class="icon-button" type="button" aria-label="取消" data-copy-aria-label="common.cancel">×</button>
         </div>
         <p id="confirmMessage" class="confirm-message"></p>
         <div class="confirm-actions">
-          <button id="cancelConfirmButton" type="button">取消</button>
-          <button id="submitConfirmButton" class="primary-button" type="button">确认</button>
+          <button id="cancelConfirmButton" type="button"><!--copy:common.cancel-->取消<!--/copy--></button>
+          <button id="submitConfirmButton" class="primary-button" type="button"><!--copy:common.confirm-->确认<!--/copy--></button>
         </div>
       </section>
     </dialog>
 
-    <dialog id="helpDialog" class="help-dialog">
+    <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpDialogTitle">
       <section class="help-panel">
         <header class="directory-heading">
-          <div><span class="eyebrow">CODEX REMOTE GUIDE</span><h2>使用帮助</h2></div>
-          <button id="closeHelpButton" class="icon-button" type="button" aria-label="关闭使用帮助">×</button>
+          <div><span class="eyebrow"><!--copy:headings.codex_remote_guide-->使用帮助<!--/copy--></span><h2 id="helpDialogTitle"><!--copy:headings.codex_remote_guide-->使用帮助<!--/copy--></h2></div>
+          <button id="closeHelpButton" class="icon-button" type="button" aria-label="关闭使用帮助" data-copy-aria-label="html.closeHelpButton.aria-label">×</button>
         </header>
         <div class="help-content">
           <section class="help-intro">
-            <strong>手机远程控制 Linux 上的 Codex</strong>
-            <p>手机和服务器先加入同一个蒲公英或其他受控私网，再用浏览器打开本页面。Windows 电脑关机后，只要服务器和 Codex daemon 仍在运行，任务也会继续。</p>
+            <strong><!--copy:html.closeHelpButton.text-->手机远程控制 Linux 上的 Codex<!--/copy--></strong>
+            <p><!--copy:html.closeHelpButton.text2-->手机和服务器先加入同一个蒲公英或其他受控私网，再用浏览器打开本页面。Windows 电脑关机后，只要服务器和 Codex daemon 仍在运行，任务也会继续。<!--/copy--></p>
           </section>
           <div class="help-grid">
-            <details open><summary>开始使用</summary><p>从“新建任务”选择工作目录，设置模型、推理强度和访问权限，然后发送第一条消息。已有任务可直接点开继续。</p></details>
-            <details><summary>运行中与跨端交接</summary><p>绿色状态表示任务仍在运行。手机和 Windows 可以查看同一任务；“停止实时跟进”只停止当前网页订阅，不会终止服务器任务。</p></details>
-            <details><summary>审批与权限</summary><p>“请求批准”需要你逐项处理；“帮我批准”由 Codex 自动审阅；“完全批准”权限最大，请只在可信目录和可信任务中使用。</p></details>
-            <details><summary>文件与附件</summary><p>附件会保存到任务工作目录。侧栏“服务器文件”可以浏览、预览和下载授权根目录内的文件。</p></details>
-            <details><summary>Goal 模式</summary><p>Goal 是跨多轮保留的长期目标；执行计划则是单轮活动。目标支持暂停、继续和清除，清除目标不会删除整个会话。</p></details>
-            <details><summary>连接故障</summary><p>若页面停滞，先确认蒲公英已连接，再刷新页面。切换手机 App 后回到浏览器，页面会自动恢复任务状态和实时输出。</p></details>
+            <details open><summary><!--copy:html.closeHelpButton.text3-->开始使用<!--/copy--></summary><p><!--copy:html.closeHelpButton.text4-->从“新建任务”选择工作目录，设置模型、推理强度和访问权限，然后发送第一条消息。已有任务可直接点开继续。<!--/copy--></p></details>
+            <details><summary><!--copy:html.closeHelpButton.text5-->运行中与跨端交接<!--/copy--></summary><p><!--copy:html.closeHelpButton.text6-->绿色状态表示任务仍在运行。手机和 Windows 可以查看同一任务；“停止实时跟进”只停止当前网页订阅，不会终止服务器任务。<!--/copy--></p></details>
+            <details><summary><!--copy:html.closeHelpButton.text7-->审批与权限<!--/copy--></summary><p><!--copy:html.closeHelpButton.text8-->“请求批准”需要你逐项处理；“帮我批准”由 Codex 自动审阅；“完全批准”权限最大，请只在可信目录和可信任务中使用。<!--/copy--></p></details>
+            <details><summary><!--copy:html.closeHelpButton.text9-->文件与附件<!--/copy--></summary><p><!--copy:html.closeHelpButton.text10-->附件会保存到任务工作目录。侧栏“服务器文件”可以浏览、预览和下载授权根目录内的文件。<!--/copy--></p></details>
+            <details><summary><!--copy:html.closeHelpButton.text11-->Goal 模式<!--/copy--></summary><p><!--copy:html.closeHelpButton.text12-->Goal 是跨多轮保留的长期目标；执行计划则是单轮活动。目标支持暂停、继续和清除，清除目标不会删除整个任务。<!--/copy--></p></details>
+            <details><summary><!--copy:html.closeHelpButton.text13-->连接故障<!--/copy--></summary><p><!--copy:html.closeHelpButton.text14-->若页面停滞，先确认蒲公英已连接，再刷新页面。切换手机 App 后回到浏览器，页面会自动恢复任务状态和实时输出。<!--/copy--></p></details>
           </div>
           <section class="help-ask">
-            <label class="field"><span>询问 Codex 在使用本 Web UI 过程中遇到的问题</span><textarea id="helpQuestionInput" rows="4" placeholder="例如：为什么某个任务一直显示等待操作？"></textarea></label>
-            <p class="hint">Web UI 使用帮助对话默认只做解释和诊断；不会自动修改 PWA。若要提出改进，会先要求 Codex 给出方案和影响范围。</p>
+            <label class="field"><span><!--copy:html.closeHelpButton.text15-->询问 Codex 在使用本 Web UI 过程中遇到的问题<!--/copy--></span><textarea id="helpQuestionInput" rows="4" placeholder="例如：为什么某个任务一直显示等待操作？" data-copy-placeholder="html.helpQuestionInput.placeholder"></textarea></label>
+            <p class="hint"><!--copy:html.helpQuestionInput.text-->Web UI 使用帮助对话默认只做解释和诊断；不会自动修改 PWA。若要提出改进，会先要求 Codex 给出方案和影响范围。<!--/copy--></p>
             <div class="help-actions">
-              <button id="askWebUiButton" class="primary-button" type="button">新建 Web UI 使用帮助对话</button>
-              <button id="requestUiChangeButton" class="secondary-upload-button" type="button">提出 Web UI 改进建议</button>
+              <button id="askWebUiButton" class="primary-button" type="button"><!--copy:html.askWebUiButton.text-->新建 Web UI 使用帮助对话<!--/copy--></button>
+              <button id="requestUiChangeButton" class="secondary-upload-button" type="button"><!--copy:html.requestUiChangeButton.text-->提出 Web UI 改进建议<!--/copy--></button>
             </div>
           </section>
         </div>
       </section>
     </dialog>
 
-    <dialog id="historyNodesDialog" class="history-nodes-dialog">
+    <dialog id="historyNodesDialog" class="history-nodes-dialog" aria-labelledby="historyNodesDialogTitle" aria-describedby="historyNodesDialogDescription">
       <section class="history-nodes-panel">
         <header class="directory-heading">
-          <div><span class="eyebrow">CONVERSATION NODES</span><h2>历史对话节点</h2></div>
-          <button id="closeHistoryNodesButton" class="icon-button" type="button" aria-label="关闭历史对话节点">×</button>
+          <div><span class="eyebrow"><!--copy:headings.conversation_nodes-->历史导航<!--/copy--></span><h2 id="historyNodesDialogTitle"><!--copy:html.historyNodesDialogTitle.text-->历史对话节点<!--/copy--></h2></div>
+          <button id="closeHistoryNodesButton" class="icon-button" type="button" aria-label="关闭历史对话节点" data-copy-aria-label="html.closeHistoryNodesButton.aria-label">×</button>
         </header>
-        <p class="history-nodes-intro">这里按每轮 Prompt 的开头整理历史节点。点击节点可以定位到对应消息；默认先载入最近记录。</p>
+        <p id="historyNodesDialogDescription" class="history-nodes-intro"><!--copy:html.historyNodesDialogDescription.text-->这里按每轮 Prompt 的开头整理历史节点。点击节点可以定位到对应消息；默认先载入最近记录。<!--/copy--></p>
         <div class="history-nodes-tools">
           <div class="directory-search">
             <span aria-hidden="true">⌕</span>
-            <input id="historyNodesSearch" type="search" placeholder="筛选历史节点" autocomplete="off" />
+            <input id="historyNodesSearch" type="search" aria-label="筛选历史节点" placeholder="筛选历史节点" autocomplete="off" data-copy-aria-label="html.historyNodesSearch.aria-label" data-copy-placeholder="html.historyNodesSearch.aria-label" />
           </div>
           <span id="historyNodesStatus" class="history-nodes-status" aria-live="polite"></span>
         </div>
         <div id="historyNodesLoading" class="history-nodes-loading-banner hidden" role="status" aria-live="polite">
-          <span class="spinner" aria-hidden="true"></span><span class="history-nodes-loading-message">正在加载中……</span>
+          <span class="spinner" aria-hidden="true"></span><span class="history-nodes-loading-message"><!--copy:html.historyNodesLoading.text-->正在加载中……<!--/copy--></span>
         </div>
-        <div id="historyNodesList" class="history-nodes-list" aria-live="polite">
+        <div id="historyNodesList" class="history-nodes-list">
           <div id="historyNodesCanvas" class="history-nodes-canvas">
-            <div id="historyNodesRows" class="history-nodes-rows"></div>
+            <div id="historyNodesRows" class="history-nodes-rows" role="list" aria-label="历史对话节点" data-copy-aria-label="html.historyNodesDialogTitle.text"></div>
           </div>
         </div>
         <footer class="history-nodes-actions">
-          <button id="historyNodesLoadMoreButton" class="secondary-upload-button" type="button">加载更早节点</button>
-          <button id="historyNodesLoadAllButton" class="primary-button" type="button">加载全部节点</button>
+          <button id="historyNodesLoadMoreButton" class="secondary-upload-button" type="button"><!--copy:html.historyNodesLoadMoreButton.text-->加载更早节点<!--/copy--></button>
+          <button id="historyNodesLoadAllButton" class="primary-button" type="button"><!--copy:html.historyNodesLoadAllButton.text-->加载全部节点<!--/copy--></button>
         </footer>
       </section>
     </dialog>
 
-    <dialog id="deviceRenameDialog" class="small-dialog">
+    <dialog id="deviceRenameDialog" class="small-dialog" aria-labelledby="deviceRenameDialogTitle">
       <form id="deviceRenameForm" class="dialog-form">
-        <div class="dialog-heading"><h2>重命名设备</h2><button id="closeDeviceRenameButton" class="icon-button" type="button" aria-label="关闭设备重命名">×</button></div>
-        <label class="field"><span>设备名称</span><input id="deviceRenameInput" maxlength="120" required /></label>
-        <button class="primary-button full-width" type="submit">保存</button>
+        <div class="dialog-heading"><h2 id="deviceRenameDialogTitle"><!--copy:html.deviceRenameDialogTitle.text-->重命名设备<!--/copy--></h2><button id="closeDeviceRenameButton" class="icon-button" type="button" aria-label="关闭设备重命名" data-copy-aria-label="html.closeDeviceRenameButton.aria-label">×</button></div>
+        <label class="field"><span><!--copy:html.closeDeviceRenameButton.text-->设备名称<!--/copy--></span><input id="deviceRenameInput" maxlength="120" required /></label>
+        <button class="primary-button full-width" type="submit"><!--copy:common.save-->保存<!--/copy--></button>
       </form>
     </dialog>
 
-    <dialog id="renameDialog" class="small-dialog">
+    <dialog id="renameDialog" class="small-dialog" aria-labelledby="renameDialogTitle">
       <form id="renameForm" class="dialog-form">
-        <div class="dialog-heading"><h2>重命名任务</h2><button id="closeRenameButton" class="icon-button" type="button" aria-label="关闭任务重命名">×</button></div>
-        <label class="field"><span>任务名称</span><input id="renameInput" maxlength="160" required /></label>
-        <button class="primary-button full-width" type="submit">保存</button>
+        <div class="dialog-heading"><h2 id="renameDialogTitle"><!--copy:html.renameDialogTitle.text-->重命名任务<!--/copy--></h2><button id="closeRenameButton" class="icon-button" type="button" aria-label="关闭任务重命名" data-copy-aria-label="html.closeRenameButton.aria-label">×</button></div>
+        <label class="field"><span><!--copy:html.closeRenameButton.text-->任务名称<!--/copy--></span><input id="renameInput" maxlength="160" required /></label>
+        <button class="primary-button full-width" type="submit"><!--copy:common.save-->保存<!--/copy--></button>
       </form>
     </dialog>
 
-    <dialog id="settingsDialog" class="small-dialog">
+    <dialog id="tagDialog" class="small-dialog" aria-labelledby="tagDialogTitle" aria-describedby="tagDialogDescription">
+      <form id="tagForm" class="dialog-form">
+        <div class="dialog-heading"><h2 id="tagDialogTitle"><!--copy:html.tagDialogTitle.text-->编辑本机标签<!--/copy--></h2><button id="closeTagButton" class="icon-button" type="button" aria-label="关闭标签编辑" data-copy-aria-label="html.closeTagButton.aria-label">×</button></div>
+        <label class="field"><span><!--copy:html.closeTagButton.text-->标签（用逗号分隔，最多 5 个）<!--/copy--></span><input id="tagInput" maxlength="140" placeholder="例如：待复核, 论文, 优先" data-copy-placeholder="html.tagInput.placeholder" /></label>
+        <p id="tagDialogDescription" class="hint"><!--copy:html.tagDialogDescription.text-->标签仅保存在当前浏览器，不会写入 Codex 任务或同步到其他设备。<!--/copy--></p>
+        <button class="primary-button full-width" type="submit"><!--copy:html.tagDialogDescription.text2-->保存标签<!--/copy--></button>
+      </form>
+    </dialog>
+
+    <dialog id="settingsDialog" class="small-dialog" aria-labelledby="settingsDialogTitle" aria-describedby="settingsPendingHint">
       <form id="settingsForm" class="dialog-form">
-        <div class="dialog-heading"><div><span class="eyebrow">NEXT TURN</span><h2>下一轮设置</h2></div><button id="closeSettingsButton" class="icon-button" type="button" aria-label="关闭下一轮设置">×</button></div>
-        <label class="field"><span>模型</span><select id="settingsModelSelect"><option value="">当前模型</option></select></label>
-        <label class="field"><span>推理强度</span><select id="settingsEffortSelect"><option value="">模型默认</option></select></label>
-        <label class="field"><span>访问权限</span><select id="settingsPermissionSelect"><option value="request">请求批准</option><option value="auto">帮我批准</option><option value="full">完全批准</option></select></label>
-        <p id="settingsPendingHint" class="hint">只有成功发送下一条新消息后，改动才会写入服务器并应用到后续轮次。</p>
-        <button class="primary-button full-width" type="submit">应用</button>
+        <div class="dialog-heading"><div><span class="eyebrow"><!--copy:headings.next_turn-->下一轮设置<!--/copy--></span><h2 id="settingsDialogTitle"><!--copy:headings.next_turn-->下一轮设置<!--/copy--></h2></div><button id="closeSettingsButton" class="icon-button" type="button" aria-label="关闭下一轮设置" data-copy-aria-label="html.closeSettingsButton.aria-label">×</button></div>
+        <label class="field"><span><!--copy:common.model-->模型<!--/copy--></span><select id="settingsModelSelect"><option value=""><!--copy:common.currentModel-->当前模型<!--/copy--></option></select></label>
+        <label class="field"><span><!--copy:common.effort-->推理强度<!--/copy--></span><select id="settingsEffortSelect"><option value=""><!--copy:common.modelDefault-->模型默认<!--/copy--></option></select></label>
+        <label class="field"><span><!--copy:html.newEffortSelect.text-->访问权限<!--/copy--></span><select id="settingsPermissionSelect"><option value="request"><!--copy:common.permissionRequest-->请求批准<!--/copy--></option><option value="auto"><!--copy:common.permissionAuto-->帮我批准<!--/copy--></option><option value="full"><!--copy:common.permissionFull-->完全批准<!--/copy--></option></select></label>
+        <p id="settingsPendingHint" class="hint"><!--copy:html.settingsPendingHint.text-->只有成功发送下一条新消息后，改动才会写入服务器并应用到后续轮次。<!--/copy--></p>
+        <button class="primary-button full-width" type="submit"><!--copy:html.settingsPendingHint.text2-->应用<!--/copy--></button>
       </form>
     </dialog>
 
-    <dialog id="goalDialog" class="small-dialog">
+    <dialog id="goalDialog" class="small-dialog" aria-labelledby="goalDialogTitle" aria-describedby="goalDialogHint">
       <form id="goalForm" class="dialog-form">
-        <div class="dialog-heading"><div><span class="eyebrow">GOAL</span><h2 id="goalDialogTitle">编辑 Goal</h2></div><button id="closeGoalButton" class="icon-button" type="button" aria-label="关闭 Goal 编辑">×</button></div>
-        <label class="field full-span"><span>目标描述</span><textarea id="goalObjectiveInput" rows="5" maxlength="4000" required placeholder="描述这个长期目标"></textarea></label>
-        <label class="field"><span>Token 预算（可选）</span><input id="goalBudgetInput" type="number" min="0" step="1" inputmode="numeric" placeholder="不限制" /></label>
-        <label class="field"><span>目标状态</span><select id="goalStatusInput"><option value="active">进行中</option><option value="paused">已暂停</option><option value="blocked">已阻塞</option><option value="usageLimited">达到用量限制</option><option value="budgetLimited">达到预算上限</option><option value="complete">已完成</option></select></label>
-        <p id="goalDialogHint" class="hint full-span">保存只更新 Goal，不会自动发送新的消息。</p>
-        <button class="primary-button full-width full-span" type="submit">保存 Goal</button>
+        <div class="dialog-heading"><div><span class="eyebrow"><!--copy:headings.goal-->长期目标<!--/copy--></span><h2 id="goalDialogTitle"><!--copy:common.editGoal-->编辑 Goal<!--/copy--></h2></div><button id="closeGoalButton" class="icon-button" type="button" aria-label="关闭 Goal 编辑" data-copy-aria-label="html.closeGoalButton.aria-label">×</button></div>
+        <label class="field full-span"><span><!--copy:html.newGoalDetails.text2-->目标描述<!--/copy--></span><textarea id="goalObjectiveInput" rows="5" maxlength="4000" required placeholder="描述这个长期目标" data-copy-placeholder="html.goalObjectiveInput.placeholder"></textarea></label>
+        <label class="field"><span><!--copy:html.newGoalObjective.text-->token 预算（可选）<!--/copy--></span><input id="goalBudgetInput" type="number" min="0" step="1" inputmode="numeric" placeholder="不限制" data-copy-placeholder="common.noLimit" /></label>
+        <label class="field"><span><!--copy:html.goalBudgetInput.text-->目标状态<!--/copy--></span><select id="goalStatusInput"><option value="active"><!--copy:goals.labels.active-->进行中<!--/copy--></option><option value="paused"><!--copy:goals.labels.paused-->已暂停<!--/copy--></option><option value="blocked"><!--copy:goals.labels.blocked-->已阻塞<!--/copy--></option><option value="usageLimited"><!--copy:goals.labels.usageLimited-->达到用量限制<!--/copy--></option><option value="budgetLimited"><!--copy:goals.labels.budgetLimited-->达到预算上限<!--/copy--></option><option value="complete"><!--copy:goals.labels.complete-->已完成<!--/copy--></option></select></label>
+        <p id="goalDialogHint" class="hint full-span"><!--copy:goals.openGoalDialog.textContent2-->保存只更新 Goal，不会自动发送新的消息。<!--/copy--></p>
+        <button class="primary-button full-width full-span" type="submit"><!--copy:html.goalDialogHint.text-->保存 Goal<!--/copy--></button>
       </form>
     </dialog>
 
-    <dialog id="attachmentSourceDialog" class="attachment-source-dialog">
+    <dialog id="attachmentSourceDialog" class="attachment-source-dialog" aria-labelledby="attachmentSourceDialogTitle" aria-describedby="attachmentSourceDialogHint">
       <section class="attachment-source-picker">
         <div class="dialog-heading">
-          <div><span class="eyebrow">ADD ATTACHMENT</span><h2>添加附件</h2></div>
-          <button id="closeAttachmentSourceButton" class="icon-button" type="button" aria-label="关闭附件选择">×</button>
+          <div><span class="eyebrow"><!--copy:headings.add_attachment-->添加附件<!--/copy--></span><h2 id="attachmentSourceDialogTitle"><!--copy:headings.add_attachment-->添加附件<!--/copy--></h2></div>
+          <button id="closeAttachmentSourceButton" class="icon-button" type="button" aria-label="关闭附件选择" data-copy-aria-label="html.closeAttachmentSourceButton.aria-label">×</button>
         </div>
         <div class="attachment-source-actions">
           <button id="choosePhotoButton" type="button">
             <span class="attachment-source-icon" aria-hidden="true">▧</span>
-            <span><strong>照片</strong><small>从手机相册或系统照片库选择</small></span>
+            <span><strong><!--copy:html.choosePhotoButton.text-->照片<!--/copy--></strong><small><!--copy:html.choosePhotoButton.text2-->从手机相册或系统照片库选择<!--/copy--></small></span>
             <span aria-hidden="true">›</span>
           </button>
           <button id="chooseFileButton" type="button">
             <span class="attachment-source-icon" aria-hidden="true">▤</span>
-            <span><strong>文件</strong><small>从文件管理器选择任意支持的文件</small></span>
+            <span><strong><!--copy:common.file-->文件<!--/copy--></strong><small><!--copy:html.chooseFileButton.text-->从文件管理器选择任意支持的文件<!--/copy--></small></span>
             <span aria-hidden="true">›</span>
           </button>
         </div>
-        <p class="attachment-source-hint">“照片”不会强制启用相机；具体照片选择界面由手机系统提供。</p>
+        <p id="attachmentSourceDialogHint" class="attachment-source-hint"><!--copy:html.attachmentSourceDialogHint.text-->“照片”不会强制启用相机；具体照片选择界面由手机系统提供。<!--/copy--></p>
       </section>
     </dialog>
 
     <div id="offlineBanner" class="offline-banner hidden" role="status" aria-live="polite"></div>
-    <div id="toast" class="toast hidden" role="status"></div>
+    <div id="toast" class="toast hidden"></div>
     <script type="module" src="/app.js"></script>
   </body>
 </html>

@@ -1,15 +1,24 @@
 {
   "name": "codex-pwa",
-  "version": "0.18.15",
+  "version": "0.19.0",
   "private": true,
   "type": "module",
   "description": "A polished mobile-first remote client for Codex app-server.",
   "scripts": {
     "start": "node server.mjs",
     "setup": "bash scripts/install-user.sh",
+    "setup:push": "node scripts/setup-push.mjs",
     "doctor": "bash scripts/doctor.sh",
+    "release:verify": "bash scripts/make-release.sh --verify-only",
+    "release:candidate": "bash scripts/make-release.sh --candidate",
+    "verify:systemd": "node scripts/verify-systemd.mjs",
+    "verify:cli": "node scripts/verify-cli-compatibility.mjs",
+    "verify:message-identity": "node scripts/verify-message-identity.mjs",
+    "verify:live-recovery": "node scripts/verify-live-recovery.mjs",
+    "copy:sync": "node scripts/sync-ui-copy.mjs",
+    "copy:check": "node scripts/sync-ui-copy.mjs --check",
     "release:local": "bash scripts/make-release.sh",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/file-preview.js && node --test"
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/file-preview.js && npm run copy:check && node --test"
   },
   "engines": {
     "node": ">=22"
@@ -20,6 +29,7 @@
     "katex": "0.18.5",
     "marked": "18.0.11",
     "pdfjs-dist": "6.3.289",
+    "web-push": "3.6.7",
     "ws": "^8.21.3"
   }
 }

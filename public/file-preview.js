@@ -1,3 +1,4 @@
+import { uiText } from "./ui-copy.js";
 import * as pdfjs from "/vendor/pdfjs/build/pdf.mjs";
 import { Marked } from "/vendor/marked/marked.esm.js";
 import DOMPurify from "/vendor/dompurify/purify.es.mjs";
@@ -39,7 +40,7 @@ function formatSize(bytes) {
 
 async function jsonResponse(response) {
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+  if (!response.ok) throw new Error(payload.error || uiText("api.httpFailure", response.status));
   return payload;
 }
 
@@ -48,25 +49,25 @@ function showError(error) {
   const card = document.createElement("section");
   card.className = "error-card";
   const heading = document.createElement("h1");
-  heading.textContent = "文件无法打开";
+  heading.textContent = uiText("preview.showError.textContent3");
   const detail = document.createElement("p");
-  detail.textContent = error?.message || "服务器没有返回这个文件。";
+  detail.textContent = error?.message || uiText("preview.showError.textContent2");
   card.append(heading, detail);
   elements.preview.append(card);
-  elements.fileMeta.textContent = "预览失败";
+  elements.fileMeta.textContent = uiText("preview.showError.textContent");
 }
 
 function showDownload(meta) {
   const card = document.createElement("section");
   card.className = "download-card";
   const heading = document.createElement("h1");
-  heading.textContent = "此格式暂不支持在线预览";
+  heading.textContent = uiText("preview.showDownload.textContent2");
   const detail = document.createElement("p");
-  detail.textContent = `${meta.name} · ${formatSize(meta.size)}，可以下载后使用手机上的对应应用打开。`;
+  detail.textContent = uiText("preview.showDownload.textContent", meta.name, formatSize(meta.size));
   const link = document.createElement("a");
   link.href = downloadUrl;
   link.download = meta.name;
-  link.textContent = "下载文件";
+  link.textContent = uiText("common.downloadFile");
   card.append(heading, detail, link);
   elements.preview.replaceChildren(card);
 }
@@ -77,7 +78,7 @@ async function showText(meta) {
     return;
   }
   const response = await fetch(rawUrl);
-  if (!response.ok) throw new Error(`读取文本失败（HTTP ${response.status}）`);
+  if (!response.ok) throw new Error(uiText("preview.showText.text", response.status));
   const pre = document.createElement("pre");
   pre.className = "text-preview";
   pre.textContent = await response.text();
@@ -90,7 +91,7 @@ async function showMarkdown(meta) {
     return;
   }
   const response = await fetch(rawUrl);
-  if (!response.ok) throw new Error(`读取 Markdown 失败（HTTP ${response.status}）`);
+  if (!response.ok) throw new Error(uiText("preview.showMarkdown.text", response.status));
   const html = markdown.parse(await response.text());
   const article = document.createElement("article");
   article.className = "markdown-preview";
@@ -111,7 +112,7 @@ function showImage(meta) {
   image.className = "image-preview";
   image.alt = meta.name;
   image.src = rawUrl;
-  image.addEventListener("error", () => showError(new Error("图片解码失败")), { once: true });
+  image.addEventListener("error", () => showError(new Error(uiText("preview.showImage.showError"))), { once: true });
   elements.preview.replaceChildren(image);
 }
 
@@ -121,7 +122,7 @@ function showMedia(meta) {
   media.controls = true;
   media.preload = "metadata";
   media.src = rawUrl;
-  media.addEventListener("error", () => showError(new Error("媒体文件无法播放")), { once: true });
+  media.addEventListener("error", () => showError(new Error(uiText("preview.showMedia.showError"))), { once: true });
   elements.preview.replaceChildren(media);
 }
 
@@ -188,7 +189,7 @@ function updateZoom(nextZoom) {
 
 async function showPdf(meta) {
   elements.zoomControls.classList.remove("hidden");
-  elements.fileMeta.textContent = `${formatSize(meta.size)} · 正在载入 PDF…`;
+  elements.fileMeta.textContent = uiText("preview.showPdf.textContent3", formatSize(meta.size));
   const loadingTask = pdfjs.getDocument({
     url: rawUrl,
     withCredentials: true,
@@ -198,10 +199,10 @@ async function showPdf(meta) {
     wasmUrl: "/vendor/pdfjs/wasm/",
   });
   loadingTask.onProgress = ({ loaded, total }) => {
-    if (total) elements.fileMeta.textContent = `${formatSize(meta.size)} · 正在载入 ${Math.round((loaded / total) * 100)}%`;
+    if (total) elements.fileMeta.textContent = uiText("preview.showPdf.textContent2", formatSize(meta.size), Math.round((loaded / total) * 100));
   };
   pdfDocument = await loadingTask.promise;
-  elements.fileMeta.textContent = `${pdfDocument.numPages} 页 · ${formatSize(meta.size)}`;
+  elements.fileMeta.textContent = uiText("preview.showPdf.textContent", pdfDocument.numPages, formatSize(meta.size));
 
   pdfDocumentNode = document.createElement("section");
   pdfDocumentNode.className = "pdf-document";
@@ -249,7 +250,7 @@ function appendPdfPageBatch() {
     const loader = document.createElement("button");
     loader.type = "button";
     loader.className = "pdf-load-more";
-    loader.textContent = `继续载入页面（${pdfNextPage}–${Math.min(pdfDocument.numPages, pdfNextPage + PDF_PAGE_BATCH_SIZE - 1)}）`;
+    loader.textContent = uiText("preview.appendPdfPageBatch.textContent", pdfNextPage, Math.min(pdfDocument.numPages, pdfNextPage + PDF_PAGE_BATCH_SIZE - 1));
     loader.addEventListener("click", appendPdfPageBatch);
     pdfDocumentNode.append(loader);
     pdfLoadMoreObserver.observe(loader);
@@ -257,7 +258,7 @@ function appendPdfPageBatch() {
 }
 
 async function initialize() {
-  if (!path.startsWith("/")) throw new Error("文件路径无效");
+  if (!path.startsWith("/")) throw new Error(uiText("preview.initialize.text"));
   const meta = await jsonResponse(await fetch(`/api/files/meta?path=${encodeURIComponent(path)}`));
   document.title = `${meta.name} · Codex Remote`;
   elements.fileName.textContent = meta.name;
