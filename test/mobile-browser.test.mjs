@@ -208,6 +208,7 @@ async function waitForExpression(cdp, expression) {
     menu: document.querySelector('.floating-popover')?.outerHTML?.slice(0, 1600),
     sidebar: document.getElementById('sidebar')?.className,
     visibility: document.visibilityState,
+    menuClosures: window.__menuClosures,
   })`);
   throw new Error(`Browser condition timed out: ${expression}; ${browser.product}; ${JSON.stringify(context)}`);
 }
@@ -424,6 +425,15 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     source: `window.EventSource = class {
       constructor() { this.openTimer = setTimeout(() => this.onopen?.(), 0); }
       close() { clearTimeout(this.openTimer); }
+    };
+    window.__menuClosures = [];
+    const removeElement = Element.prototype.remove;
+    Element.prototype.remove = function() {
+      if (this.classList.contains('floating-popover')) {
+        window.__menuClosures.push(new Error('menu removed').stack);
+        window.__menuClosures = window.__menuClosures.slice(-3);
+      }
+      return removeElement.call(this);
     };`,
   });
   const recoveryBase = jsonRoute(`http://127.0.0.1:${appPort}/api/threads`).data[0];
@@ -474,7 +484,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   const accessibleNode = async (selector) => {
     const { root } = await cdp.send("DOM.getDocument");
     const { nodeId } = await cdp.send("DOM.querySelector", { nodeId: root.nodeId, selector });
-    assert.ok(nodeId, selector);
+    assert.ok(nodeId, selector + ': ' + JSON.stringify(await evaluate(cdp, `window.__menuClosures`)));
     const { nodes } = await cdp.send("Accessibility.getPartialAXTree", { nodeId, fetchRelatives: false });
     return nodes[0];
   };
@@ -901,9 +911,19 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   assert.ok(fileRowGeometry.rightInset >= 12);
   assert.notEqual(fileRowGeometry.background, "rgba(0, 0, 0, 0)");
   await waitForExpression(cdp, `document.activeElement?.getAttribute("role") === "menuitem"`);
+  const readsBeforeMenuRecovery = threadReads;
+  await evaluate(cdp, `window.dispatchEvent(new Event('focus'))`);
+  for (let attempt = 0; attempt < 100 && threadReads <= readsBeforeMenuRecovery; attempt += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 30));
+  }
+  assert.ok(threadReads > readsBeforeMenuRecovery, "foreground recovery rereads the selected task");
+  assert.equal(await evaluate(cdp, `document.activeElement?.getAttribute('role') === 'menuitem'`), true,
+    "silent recovery must preserve the open file menu and focus: "
+      + JSON.stringify(await evaluate(cdp, `window.__menuClosures`)));
   await evaluate(cdp, `document.getElementById('messages').dispatchEvent(new Event('scroll'))`);
   assert.equal(await evaluate(cdp, `Boolean(document.querySelector('.floating-popover'))`), true,
-    "background conversation scrolling must not dismiss actions in the file dialog");
+    "background conversation scrolling must not dismiss actions in the file dialog: "
+      + JSON.stringify(await evaluate(cdp, `window.__menuClosures`)));
   assert.equal((await accessibleNode(".floating-popover")).ignored, false,
     "a file action menu must remain in the native dialog's accessible subtree");
   assert.equal(await evaluate(cdp, `(() => { const menu = document.querySelector('.floating-popover');

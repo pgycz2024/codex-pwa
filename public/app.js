@@ -2372,10 +2372,10 @@ async function openThread(threadId, {
   archived = state.selectedThread?.id === threadId ? Boolean(state.selectedThread.archived) : false,
 } = {}) {
   if (!threadId) return;
-  closeAllMenus();
   if (silent && state.selectedThread?.id === threadId) {
     return refreshSelectedThread({ preserveScroll, isCurrent });
   }
+  closeAllMenus();
   const switchingThreads = state.selectedThread?.id && state.selectedThread.id !== threadId;
   if (!silent && switchingThreads && state.uploadRequest) {
     showToast(uiText("app.openThread.showToast3"));
