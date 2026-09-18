@@ -546,6 +546,37 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   assert.equal(await evaluate(cdp, `document.activeElement.id`), "menuButton");
   assert.equal((await accessibleNode("#sidebar")).ignored, true);
   await evaluate(cdp, `document.getElementById("menuButton").click()`);
+  const utilityFooter = await evaluate(cdp, `(() => {
+    const rect = (node) => {
+      const box = node.getBoundingClientRect();
+      return { left: box.left, top: box.top, width: box.width, height: box.height };
+    };
+    const grid = rect(document.querySelector('.sidebar-menu-grid'));
+    const logout = rect(document.getElementById('logoutButton'));
+    const status = rect(document.querySelector('.server-status'));
+    const statusCopy = rect(document.querySelector('.server-status-copy'));
+    const notificationLabel = document.getElementById('notificationLabel');
+    notificationLabel.textContent = '通知\\n（需 HTTPS）';
+    const notification = rect(document.getElementById('notificationButton'));
+    const notificationText = rect(notificationLabel);
+    return {
+      grid, logout, status, statusCopy, notification, notificationText,
+      notificationWhiteSpace: getComputedStyle(notificationLabel).whiteSpace,
+      networkWhiteSpace: getComputedStyle(document.getElementById('networkLabel')).whiteSpace,
+      networkWrap: getComputedStyle(document.getElementById('networkLabel')).overflowWrap,
+    };
+  })()`);
+  assert.ok(utilityFooter.status.width > utilityFooter.logout.width * 1.5,
+    'connection status uses the available middle and right utility cells');
+  assert.ok(Math.abs(
+    (utilityFooter.statusCopy.left + utilityFooter.statusCopy.width / 2)
+      - (utilityFooter.status.left + utilityFooter.status.width / 2),
+  ) < 2, `connection status copy is centered in its expanded cell: ${JSON.stringify(utilityFooter)}`);
+  assert.equal(utilityFooter.notificationWhiteSpace, 'pre-line');
+  assert.ok(utilityFooter.notificationText.height > 15, 'HTTPS hint can occupy a second line');
+  assert.ok(utilityFooter.notification.height >= utilityFooter.notificationText.height);
+  assert.equal(utilityFooter.networkWhiteSpace, 'normal');
+  assert.equal(utilityFooter.networkWrap, 'anywhere');
   await inspectTouchTargets('#sidebar');
   await tapSelectionMargin('.thread-select');
   await waitForExpression(cdp, `document.querySelector('.thread-select').checked`);

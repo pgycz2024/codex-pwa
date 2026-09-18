@@ -627,7 +627,7 @@ export const UI_COPY = Object.freeze({
   "notifications.sync.textContent": "通知已拒绝",
   "notifications.sync.textContent2": "页面通知已开启",
   "notifications.sync.title3": "浏览器通知需要 HTTPS 或本机安全上下文",
-  "notifications.sync.textContent3": "通知（需 HTTPS）",
+  "notifications.sync.textContent3": "通知\n（需 HTTPS）",
   "notifications.sync.textContent4": "通知不可用",
   "fileErrors.handleFileApi.uploadError": "搜索词至少需要 2 个字符",
   "fileErrors.operateOnFile.uploadError": "不能直接操作授权根目录",
