@@ -761,7 +761,8 @@ dialog::backdrop { background: rgb(0 0 0 / 68%); backdrop-filter: blur(4px); }
   .sidebar-primary-actions { margin-left: 8px; margin-right: 8px; }
   .sidebar-menu-grid { gap: 1px; }
   .sidebar-utility { padding-left: 4px; padding-right: 4px; font-size: .55rem; }
-  .server-status { padding-left: 4px; padding-right: 4px; }
+  .server-status { padding-left: 8px; padding-right: 4px; }
+  .network-status { padding-left: 12px; padding-right: 4px; }
   /* Keep the title centered while reserving the full right-side action area.
      Without this bound, long titles can visually run underneath the changes
      and task-menu buttons on narrow phones. */

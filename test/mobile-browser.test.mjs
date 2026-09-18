@@ -557,6 +557,8 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     const dot = rect(document.getElementById('connectionDot'));
     const statusCopy = rect(document.querySelector('.server-status-copy'));
     const devices = rect(document.getElementById('trustedDevicesButton'));
+    const devicesIcon = rect(document.querySelector('#trustedDevicesButton > span:first-child'));
+    const refreshIcon = rect(document.querySelector('#refreshWebUiButton > span:first-child'));
     const network = rect(document.querySelector('.network-status'));
     const networkName = rect(document.getElementById('networkName'));
     const networkLabel = rect(document.getElementById('networkLabel'));
@@ -565,7 +567,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     const notification = rect(document.getElementById('notificationButton'));
     const notificationText = rect(notificationLabel);
     return {
-      grid, logout, status, dot, statusCopy, devices, network, networkName, networkLabel, notification, notificationText,
+      grid, logout, status, dot, statusCopy, devices, devicesIcon, refreshIcon, network, networkName, networkLabel, notification, notificationText,
       notificationWhiteSpace: getComputedStyle(notificationLabel).whiteSpace,
       networkWhiteSpace: getComputedStyle(document.getElementById('networkLabel')).whiteSpace,
       networkWrap: getComputedStyle(document.getElementById('networkLabel')).overflowWrap,
@@ -576,12 +578,19 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     `connection status shares the device column: ${JSON.stringify(utilityFooter)}`);
   assert.ok(Math.abs(utilityFooter.statusCopy.left - (utilityFooter.dot.left + utilityFooter.dot.width + 5)) < 2,
     `connection label stays beside the aligned status dot: ${JSON.stringify(utilityFooter)}`);
+  assert.ok(Math.abs(
+    (utilityFooter.dot.left + utilityFooter.dot.width / 2)
+      - (utilityFooter.devicesIcon.left + utilityFooter.devicesIcon.width / 2),
+  ) < 1,
+  `connection dot aligns with the device icon center: ${JSON.stringify(utilityFooter)}`);
   assert.ok(Math.abs(utilityFooter.network.left - utilityFooter.notification.left) < 1,
     'network block uses the right utility column');
   assert.ok(Math.abs(utilityFooter.network.top - utilityFooter.status.top) < 1,
     'network block shares the third utility row');
   assert.ok(utilityFooter.networkName.left <= utilityFooter.networkLabel.left + 1,
     'network block is left aligned');
+  assert.ok(utilityFooter.networkName.left >= utilityFooter.refreshIcon.left + 7,
+    `network text clears the refresh icon edge: ${JSON.stringify(utilityFooter)}`);
   assert.equal(utilityFooter.notificationWhiteSpace, 'nowrap');
   assert.ok(utilityFooter.notificationText.height <= 16, 'HTTPS notification label stays on one line');
   assert.equal(utilityFooter.networkWhiteSpace, 'normal');
