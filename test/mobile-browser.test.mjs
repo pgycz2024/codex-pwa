@@ -558,6 +558,8 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     const statusCopy = rect(document.querySelector('.server-status-copy'));
     const devices = rect(document.getElementById('trustedDevicesButton'));
     const devicesIcon = rect(document.querySelector('#trustedDevicesButton > span:first-child'));
+    const devicesLabel = rect(document.querySelector('#trustedDevicesButton > span:last-child'));
+    const logoutLabel = rect(document.querySelector('#logoutButton > span:last-child'));
     const refreshIcon = rect(document.querySelector('#refreshWebUiButton > span:first-child'));
     const network = rect(document.querySelector('.network-status'));
     const networkName = rect(document.getElementById('networkName'));
@@ -567,7 +569,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     const notification = rect(document.getElementById('notificationButton'));
     const notificationText = rect(notificationLabel);
     return {
-      grid, logout, status, dot, statusCopy, devices, devicesIcon, refreshIcon, network, networkName, networkLabel, notification, notificationText,
+      grid, logout, status, dot, statusCopy, devices, devicesIcon, devicesLabel, logoutLabel, refreshIcon, network, networkName, networkLabel, notification, notificationText,
       notificationWhiteSpace: getComputedStyle(notificationLabel).whiteSpace,
       networkWhiteSpace: getComputedStyle(document.getElementById('networkLabel')).whiteSpace,
       networkWrap: getComputedStyle(document.getElementById('networkLabel')).overflowWrap,
@@ -576,8 +578,15 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   assert.equal(utilityFooter.status.width, utilityFooter.devices.width);
   assert.ok(Math.abs(utilityFooter.status.left - utilityFooter.devices.left) < 1,
     `connection status shares the device column: ${JSON.stringify(utilityFooter)}`);
-  assert.ok(Math.abs(utilityFooter.statusCopy.left - (utilityFooter.dot.left + utilityFooter.dot.width + 5)) < 2,
+  assert.ok(Math.abs(utilityFooter.statusCopy.left - (utilityFooter.dot.left + utilityFooter.dot.width + 9)) < 2,
     `connection label stays beside the aligned status dot: ${JSON.stringify(utilityFooter)}`);
+  assert.ok(Math.abs(utilityFooter.statusCopy.left - utilityFooter.devicesLabel.left) < 1,
+    `connection label aligns with the device label: ${JSON.stringify(utilityFooter)}`);
+  assert.ok(Math.abs(
+    (utilityFooter.statusCopy.top + utilityFooter.statusCopy.height / 2)
+      - (utilityFooter.logoutLabel.top + utilityFooter.logoutLabel.height / 2),
+  ) < 1,
+  `connection label shares the logout label centerline: ${JSON.stringify(utilityFooter)}`);
   assert.ok(Math.abs(
     (utilityFooter.dot.left + utilityFooter.dot.width / 2)
       - (utilityFooter.devicesIcon.left + utilityFooter.devicesIcon.width / 2),

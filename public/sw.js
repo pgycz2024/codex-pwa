@@ -1,4 +1,4 @@
-const CACHE = "codex-pwa-v123";
+const CACHE = "codex-pwa-v124";
 const ASSETS = [
   "/",
   "/styles.css",

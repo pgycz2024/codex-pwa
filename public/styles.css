@@ -762,6 +762,8 @@ dialog::backdrop { background: rgb(0 0 0 / 68%); backdrop-filter: blur(4px); }
   .sidebar-menu-grid { gap: 1px; }
   .sidebar-utility { padding-left: 4px; padding-right: 4px; font-size: .55rem; }
   .server-status { padding-left: 8px; padding-right: 4px; }
+  .server-status-copy { margin-left: 4px; }
+  .server-status-copy strong { display: inline-block; transform: translateY(-4px); }
   .network-status { padding-left: 12px; padding-right: 4px; }
   /* Keep the title centered while reserving the full right-side action area.
      Without this bound, long titles can visually run underneath the changes
