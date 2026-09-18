@@ -9,17 +9,14 @@ export function createThreadListViewManager({
   threadTitle,
   threadPreview,
   statusInfo,
-  sourceLabel,
   threadRecencyEpoch,
   normalizeEpochSeconds,
   formatRelative,
   formatAbsolute,
   isRecentThread,
   matchesThreadFilter,
-  tagsForThread,
   openThread,
   openThreadActionMenu,
-  openTagDialog,
   openFloatingMenu,
   togglePin,
   openRenameDialog,
@@ -64,21 +61,11 @@ export function createThreadListViewManager({
       .sort((left, right) => left.localeCompare(right, "zh-CN", { numeric: true, sensitivity: "base" }));
     const entries = [["all", uiText("html.threadProjectFilter.text")], ...paths.map((path) => [path, basename(path), path])];
     if (current !== "all" && !paths.includes(current)) {
-      entries.push([current, uiText("list.syncTagFilterOptions.push", basename(current)), current]);
+      entries.push([current, basename(current), current]);
     }
     syncOptions(elements.threadProjectFilter, entries, current);
   }
 
-  function syncTagFilterOptions() {
-    const current = state.threadTagFilter;
-    const tags = [...new Set([...state.threadTags.values()].flat())]
-      .sort((left, right) => left.localeCompare(right, "zh-CN", { sensitivity: "base" }));
-    const entries = [["all", uiText("html.threadTagFilter.text")], ...tags.map((tag) => [tag, tag])];
-    if (current !== "all" && !tags.includes(current)) {
-      entries.push([current, uiText("list.syncTagFilterOptions.push", current)]);
-    }
-    syncOptions(elements.threadTagFilter, entries, current);
-  }
 
   function wireThreadLongPress(main, card, currentThread) {
     let timer = null;
@@ -131,9 +118,7 @@ export function createThreadListViewManager({
     return scoped.filter((thread) => matchesThreadFilter(thread, {
       filter: state.threadFilter,
       project: state.threadProjectFilter,
-      tag: state.threadTagFilter,
       unreadThreads: state.unreadThreads,
-      tagsByThread: state.threadTags,
       statusType: (status) => statusInfo(status).type,
     }));
   }
@@ -179,11 +164,7 @@ export function createThreadListViewManager({
     const title = el("span", "thread-title");
     const unread = el("span", "thread-unread-badge", uiText("list.createThreadCard.el"));
     const preview = el("span", "thread-preview");
-    const meta = el("span", "thread-meta");
-    const statusText = el("span");
-    const origin = el("span");
-    meta.append(statusText, el("span", "", "·"), origin);
-    main.append(titleLine, preview, meta);
+    main.append(titleLine, preview);
     record.cancelPress = wireThreadLongPress(main, card, () => record.thread);
     const time = el("time", "thread-time");
     const menu = el("div", "thread-menu");
@@ -197,7 +178,6 @@ export function createThreadListViewManager({
       const actions = [
       { label: state.pinned.has(thread.id) ? uiText("common.unpin") : uiText("common.pin"), handler: () => togglePin(thread.id) },
       { label: uiText("common.rename"), handler: () => openRenameDialog(thread) },
-      { label: uiText("html.tagDialogTitle.text"), handler: () => openTagDialog(thread) },
       { label: uiText("html.copyThreadIdButton.text"), handler: () => copyThreadId(thread.id) },
       {
         label: thread.archived ? uiText("common.restore") : uiText("common.archive"),
@@ -209,7 +189,7 @@ export function createThreadListViewManager({
     });
     menu.append(menuButton);
     card.append(selectTarget, main, time, menu);
-    return Object.assign(record, { select, main, titleLine, statusDot, pin, title, unread, preview, statusText, origin, time, menuButton, tags: new Map() });
+    return Object.assign(record, { select, main, titleLine, statusDot, pin, title, unread, preview, time, menuButton });
   }
 
   function updateThreadCard(record, thread) {
@@ -222,16 +202,8 @@ export function createThreadListViewManager({
     record.statusDot.className = `thread-status ${status.type}`;
     setText(record.title, threadTitle(thread));
     setText(record.preview, threadPreview(thread));
-    setText(record.statusText, status.label);
-    setText(record.origin, thread.gitInfo?.branch || sourceLabel(thread));
-    const tags = tagsForThread(thread.id);
-    for (const tag of record.tags.keys()) if (!tags.includes(tag)) record.tags.delete(tag);
-    const tagNodes = tags.map((tag) => {
-      if (!record.tags.has(tag)) record.tags.set(tag, el("span", "thread-tag", tag));
-      return record.tags.get(tag);
-    });
     reconcileChildren(record.titleLine, [record.statusDot, ...(state.pinned.has(thread.id) ? [record.pin] : []),
-      record.title, ...tagNodes, ...(state.unreadThreads.has(thread.id) ? [record.unread] : [])]);
+      record.title, ...(state.unreadThreads.has(thread.id) ? [record.unread] : [])]);
     const activityAt = normalizeEpochSeconds(thread.recencyAt || thread.updatedAt);
     setText(record.time, formatRelative(activityAt));
     record.time.title = formatAbsolute(activityAt);
@@ -250,7 +222,6 @@ export function createThreadListViewManager({
     const focusedIndex = previousCards.findIndex((card) => card.contains(active));
     const anchor = captureReadingAnchor(elements.threadList, previousCards);
     syncProjectFilterOptions();
-    syncTagFilterOptions();
     const visibleIds = new Set(visibleThreadCandidates().map((thread) => thread.id));
     for (const selectedId of state.selectedThreadIds) {
       if (!visibleIds.has(selectedId)) state.selectedThreadIds.delete(selectedId);
@@ -260,8 +231,7 @@ export function createThreadListViewManager({
     for (const [id, record] of cards) if (!visibleIds.has(id)) { record.cancelPress(); cards.delete(id); }
     if (!visibleThreads.length) {
       let emptyCopy;
-      if (state.query) emptyCopy = [uiText("list.renderThreads.text22"), uiText("directory.renderDirectoryList.el2")];
-      else if (state.threadFilter === "unread") emptyCopy = [uiText("list.renderThreads.text21"), uiText("list.renderThreads.text20")];
+      if (state.threadFilter === "unread") emptyCopy = [uiText("list.renderThreads.text21"), uiText("list.renderThreads.text20")];
       else if (state.threadFilter === "waiting") emptyCopy = [uiText("list.renderThreads.text19"), uiText("list.renderThreads.text18")];
       else if (state.threadFilter === "active") emptyCopy = [uiText("list.renderThreads.text17"), uiText("list.renderThreads.text16")];
       else if (state.threadFilter === "error") emptyCopy = [uiText("list.renderThreads.text15"), uiText("list.renderThreads.text14")];
@@ -325,7 +295,6 @@ export function createThreadListViewManager({
   return {
     syncListModeTabs,
     syncProjectFilterOptions,
-    syncTagFilterOptions,
     visibleThreadCandidates,
     syncThreadBatchActions,
     toggleThreadSelection,

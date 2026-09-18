@@ -60,6 +60,79 @@ test("task service reads bounded origin metadata through promise-based files and
   assert.equal((await second.serializeThreadWithOrigin({ id: "task", source: "vscode", path })).clientOrigin, "cli");
 });
 
+test("thread search matches recent user and assistant messages, enforces roots, and deduplicates archive buckets", async () => {
+  const makeThread = (id, name, cwd, recencyAt, archived = false) => ({
+    id, name, preview: name, cwd, recencyAt, updatedAt: recencyAt, archived,
+    source: "appServer", threadSource: "codex-pwa-mobile", status: { type: "idle" },
+  });
+  const active = [
+    makeThread("title-hit", "标题命中任务", "/allowed/project/title", 40),
+    makeThread("user-hit", "普通任务一", "/allowed/project/user", 30),
+    makeThread("assistant-hit", "普通任务二", "/allowed/project/assistant", 20),
+    makeThread("duplicate", "重复任务", "/allowed/project/duplicate", 10),
+    makeThread("outside", "外部秘密任务", "/outside/project", 50),
+  ];
+  const archived = [
+    makeThread("duplicate", "重复任务（归档副本）", "/allowed/project/duplicate", 9, true),
+  ];
+  const messages = {
+    "title-hit": [{ text: "标题任务的最新回复" }],
+    "user-hit": [{ text: "用户最近消息包含蓝莓关键词" }],
+    "assistant-hit": [{ text: "助手最近消息包含石榴关键词" }],
+    duplicate: [{ text: "重复任务的最新消息" }],
+    outside: [{ text: "外部秘密内容" }],
+  };
+  const calls = [];
+  const codex = {
+    request: async (method, params) => {
+      calls.push([method, params]);
+      assert.equal(method, "thread/list");
+      const rows = params.archived ? archived : active;
+      if (!params.searchTerm) return { data: rows };
+      return { data: rows.filter((thread) => String(thread.name).includes(params.searchTerm)) };
+    },
+  };
+  const runtime = runtimeFor(codex);
+  const service = {
+    allowedThread: async () => ({ id: "unused" }),
+    requestThreadGoal: async () => ({ supported: false, goal: null }),
+    requestThreadGoalBestEffort: async () => ({ supported: false, goal: null }),
+    goalUnsupportedError: () => new Error("unsupported"),
+    goalSetParams: () => ({}),
+    readThreadTurnsPage: async () => ({ data: [] }),
+    readRecentThreadMessages: async (threadId) => messages[threadId] || [],
+    readActiveNarrative: async () => ({ data: [] }),
+    syncActiveTurnFromHistory: async () => {},
+    subscribeThread: async () => ({}),
+    serializeThreadWithOrigin: async (thread) => ({ ...thread, clientOrigin: "mobile-web" }),
+    threadWriteConflictError: (error) => error,
+    readHistoryOutput: () => "",
+  };
+  let response;
+  const api = createTaskApi({
+    codex, runtime, service, artifacts: {}, roots: [], usesSharedDaemon: true,
+    isAllowedThreadPath: async (cwd) => String(cwd).startsWith("/allowed/"),
+    sendJson: (_response, status, body) => { response = { status, body }; },
+    readBody: async () => ({}),
+    broadcast: () => {},
+  });
+  const search = async (query, archivedMode = "all") => {
+    await api.handleTaskApi({ method: "GET", headers: {} }, {},
+      new URL(`http://localhost/api/thread-search?query=${encodeURIComponent(query)}&archived=${archivedMode}`),
+      { kind: "disabled" });
+    assert.equal(response.status, 200);
+    return response.body.data;
+  };
+  assert.deepEqual((await search("标题命中")).map((thread) => thread.id), ["title-hit"]);
+  assert.deepEqual((await search("蓝莓")).map((thread) => thread.id), ["user-hit"]);
+  assert.deepEqual((await search("石榴")).map((thread) => thread.id), ["assistant-hit"]);
+  assert.deepEqual(await search("不存在"), []);
+  assert.deepEqual((await search("重复")).map((thread) => thread.id), ["duplicate"]);
+  assert.deepEqual(await search("秘密"), []);
+  assert.deepEqual(await search(""), []);
+  assert.ok(calls.length >= 8, "search should read both ordinary and title candidates");
+});
+
 test("cached generated images recheck current task authorization before GET or HEAD", async () => {
   let allowed = true;
   let reads = 0;

@@ -28,12 +28,95 @@ export function createTaskApi({
   readBody,
   sendJson
 }) {
-  const { allowedThread, requestThreadGoal, requestThreadGoalBestEffort, goalUnsupportedError, goalSetParams, readThreadTurnsPage, readActiveNarrative, syncActiveTurnFromHistory, subscribeThread, serializeThreadWithOrigin, threadWriteConflictError, readHistoryOutput } = service;
+  const { allowedThread, requestThreadGoal, requestThreadGoalBestEffort, goalUnsupportedError, goalSetParams, readThreadTurnsPage, readRecentThreadMessages, readActiveNarrative, syncActiveTurnFromHistory, subscribeThread, serializeThreadWithOrigin, threadWriteConflictError, readHistoryOutput } = service;
   const { activeTurns, ownedThreads, releasingThreads, threadMutationQueue, clearThreadReleaseTimer, markThreadOwned, hasPendingThreadRequest, releaseThread, scheduleThreadRelease } = runtime;
   const { listThreadArtifacts, sendThreadArtifact } = artifacts;
   const THREAD_LIST_PAGE_SIZE = 50;
   const MAX_THREAD_LIST_PAGE_SIZE = 100;
   const IDLE_SUBSCRIPTION_LEASE_MS = 90_000;
+  const SEARCH_THREAD_LIMIT = 80;
+  const SEARCH_CONCURRENCY = 6;
+
+  async function mapWithConcurrency(values, concurrency, mapper) {
+    const output = new Array(values.length);
+    let next = 0;
+    async function worker() {
+      while (true) {
+        const index = next++;
+        if (index >= values.length) return;
+        output[index] = await mapper(values[index], index);
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(concurrency, values.length) }, () => worker()));
+    return output;
+  }
+
+  function searchableText(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function searchSnippet(text, query) {
+    const source = searchableText(text);
+    const index = source.toLocaleLowerCase("zh-CN").indexOf(query.toLocaleLowerCase("zh-CN"));
+    if (index < 0) return source.slice(0, 180);
+    const start = Math.max(0, index - 70);
+    const end = Math.min(source.length, index + query.length + 110);
+    return `${start ? "…" : ""}${source.slice(start, end)}${end < source.length ? "…" : ""}`;
+  }
+
+  async function listThreadsForSearch({ archived, query }) {
+    const common = {
+      limit: SEARCH_THREAD_LIMIT,
+      sortKey: "recency_at",
+      sortDirection: "desc",
+      archived,
+      sourceKinds: ["cli", "vscode", "exec", "appServer", "unknown"],
+    };
+    const [recentResult, titleResult] = await Promise.all([
+      codex.request("thread/list", common),
+      codex.request("thread/list", { ...common, searchTerm: query }),
+    ]);
+    const candidates = new Map();
+    for (const thread of [...(recentResult?.data || []), ...(titleResult?.data || [])]) {
+      if (thread?.id) candidates.set(String(thread.id), thread);
+    }
+    const allowed = (await Promise.all([...candidates.values()].map(async (thread) => (
+      await isAllowedThreadPath(thread.cwd) ? thread : null
+    )))).filter(Boolean);
+    const rows = await mapWithConcurrency(allowed, SEARCH_CONCURRENCY, async (thread) => {
+      const serialized = await serializeThreadWithOrigin(thread);
+      const title = searchableText(thread.name || thread.preview);
+      const titleMatch = title.toLocaleLowerCase("zh-CN").includes(query.toLocaleLowerCase("zh-CN"));
+      let recentMessages = [];
+      if (typeof readRecentThreadMessages === "function") {
+        try { recentMessages = await readRecentThreadMessages(thread.id, 4); } catch {}
+      }
+      const matchedMessage = recentMessages.find((message) => searchableText(message.text)
+        .toLocaleLowerCase("zh-CN").includes(query.toLocaleLowerCase("zh-CN")));
+      if (!titleMatch && !matchedMessage) return null;
+      return {
+        ...serialized,
+        archived: Boolean(archived),
+        latestMessage: recentMessages[0]?.text || "",
+        searchMatch: titleMatch
+          ? { kind: "title", snippet: searchSnippet(title, query) }
+          : { kind: "message", snippet: searchSnippet(matchedMessage.text, query) },
+      };
+    });
+    return rows.filter(Boolean);
+  }
+
+  async function enrichThreadList(data, archived) {
+    if (typeof readRecentThreadMessages !== "function") {
+      return Promise.all(data.map(async (thread) => ({ ...await serializeThreadWithOrigin(thread), archived })));
+    }
+    return mapWithConcurrency(data, SEARCH_CONCURRENCY, async (thread) => {
+      const serialized = await serializeThreadWithOrigin(thread);
+      let messages = [];
+      try { messages = await readRecentThreadMessages(thread.id, 1); } catch {}
+      return { ...serialized, archived, latestMessage: messages[0]?.text || "" };
+    });
+  }
 
   function initialThreadName(prompt) {
     const singleLine = String(prompt || "").replace(/\s+/g, " ").trim();
@@ -98,10 +181,34 @@ export function createTaskApi({
         ...(searchTerm ? { searchTerm } : {}),
         ...(cursor ? { cursor } : {}),
       });
-      const data = (await Promise.all((result?.data || []).map(async (thread) => (
-        await isAllowedThreadPath(thread.cwd) ? serializeThreadWithOrigin(thread) : null
+      const allowedData = (await Promise.all((result?.data || []).map(async (thread) => (
+        thread?.cwd && await isAllowedThreadPath(thread.cwd) ? thread : null
       )))).filter(Boolean);
+      const data = await enrichThreadList(allowedData, archived);
       sendJson(response, 200, { ...result, data });
+      return true;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/thread-search") {
+      const query = String(url.searchParams.get("query") || "").trim().slice(0, 160);
+      if (!query) {
+        sendJson(response, 200, { data: [] });
+        return true;
+      }
+      const archivedMode = url.searchParams.get("archived") || "false";
+      const archivedValues = archivedMode === "all" ? [false, true] : [archivedMode === "true"];
+      const pages = await Promise.all(archivedValues.map((archived) => listThreadsForSearch({ archived, query })));
+      // A daemon can return the same task from its ordinary and search-term
+      // result sets, and an older daemon may briefly expose a task in both
+      // archive buckets during an archive transition. Keep one safe row per
+      // task so the dialog never shows duplicate results.
+      const unique = new Map();
+      for (const row of pages.flat()) {
+        if (row?.id && !unique.has(String(row.id))) unique.set(String(row.id), row);
+      }
+      const data = [...unique.values()];
+      data.sort((left, right) => Number(right.recencyAt || right.updatedAt || 0) - Number(left.recencyAt || left.updatedAt || 0));
+      sendJson(response, 200, { data: data.slice(0, SEARCH_THREAD_LIMIT * archivedValues.length), limited: true });
       return true;
     }
 

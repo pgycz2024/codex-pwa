@@ -2185,7 +2185,7 @@ test("streaming upload API is bounded, CSRF-marked, and atomically claims new na
 test("V2 interface exposes the core mobile task controls", async () => {
   const html = await readProductSource("public/index.html");
   for (const id of [
-    "threadSearch", "recentTab", "allHistoryTab", "archivedTab", "threadFilter", "contextPanel", "changesPanel", "newModelSelect",
+    "searchTaskButton", "searchDialog", "searchTaskInput", "clearSearchTaskButton", "recentTab", "allHistoryTab", "archivedTab", "threadFilter", "contextPanel", "changesPanel", "newModelSelect",
     "settingsDialog", "renameDialog", "approvalArea", "scrollBottomButton", "historyControls",
     "loadMoreHistoryButton", "loadCompleteHistoryButton", "historyNodesButton", "releaseThreadButton",
     "attachButton", "fileInput", "photoInput", "attachmentTray", "newAttachButton", "newFileInput",
@@ -2223,8 +2223,8 @@ test("primary conversation messages render compatible timestamps", async () => {
   // Message-level and fallback timestamps are verified through real renders
   // in the Chrome suite, independently of the turn reconciliation syntax.
   assert.match(app, /工作目录：\$\{basename\(cwd\)\}/);
-  assert.match(app, /创建来源：\${sourceLabel\(state\.selectedThread\)\}/);
-  assert.match(app, /elements\.chatMeta\.title = `\$\{cwd \|\| "工作目录未知"\}/);
+  assert.doesNotMatch(app, /创建来源：\$\{sourceLabel\(state\.selectedThread\)\}/);
+  assert.match(app, /elements\.chatMeta\.title = cwd \|\| "工作目录未知"/);
   assert.match(css, /\.message-meta\s*\{/);
   assert.match(css, /\.message-row\.user \.message-meta/);
   assert.match(app, /meta = el\("time", "message-meta"\)/);
@@ -2549,7 +2549,7 @@ test("conversation output exposes accessible generation and outcome states", asy
     ["credentialsDialog", "credentialsDialogTitle"], ["threadActionDialog", "threadActionTitle"],
     ["confirmDialog", "confirmTitle"], ["helpDialog", "helpDialogTitle"],
     ["historyNodesDialog", "historyNodesDialogTitle"], ["deviceRenameDialog", "deviceRenameDialogTitle"],
-    ["renameDialog", "renameDialogTitle"], ["tagDialog", "tagDialogTitle"],
+    ["renameDialog", "renameDialogTitle"],
     ["settingsDialog", "settingsDialogTitle"], ["goalDialog", "goalDialogTitle"],
     ["attachmentSourceDialog", "attachmentSourceDialogTitle"],
   ]) {
@@ -2630,7 +2630,7 @@ test("long histories use summary-first loading with bounded on-demand activity d
   assert.match(css, /\.history-controls button\s*\{[^}]*min-width:\s*0[^}]*white-space:\s*normal/);
 });
 
-test("sidebar utility menu is a unified 3x2 layout with inline connection status", async () => {
+test("sidebar utility menu is a compact 3x3 layout with inline connection status", async () => {
   const [app, html, css, worker, notifications] = await Promise.all([
     readAppSources(),
     readProductSource("public/index.html"),
@@ -2652,7 +2652,8 @@ test("sidebar utility menu is a unified 3x2 layout with inline connection status
   assert.doesNotMatch(html, /id="fileBrowserBreadcrumbs"/);
   assert.doesNotMatch(app, /renderFileBrowserBreadcrumbs/);
   assert.match(html, /id="logoutAllButton"[^>]*>退出全部设备/);
-  assert.match(css, /\.sidebar-menu-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2/);
+  assert.match(css, /\.sidebar-menu-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3/);
+  assert.match(css, /grid-template-areas:\s*"files theme notification"\s*"help devices refresh"\s*"logout empty status"/);
   // Chrome checks consistent action typography and 200% font scaling without
   // requiring fixed pixel font declarations.
   assert.match(css, /\.sidebar-menu-grid \.sidebar-utility > span:first-child\s*\{[^}]*flex:\s*0 0 16px/);
@@ -2667,7 +2668,7 @@ test("sidebar utility menu is a unified 3x2 layout with inline connection status
   assert.match(notifications, /isSecureContext/);
   assert.match(app, /notificationButton\.addEventListener\("click", enableBrowserNotifications\)/);
   assert.match(worker, /"\/browser-notifications\.js"/);
-  assert.match(worker, /codex-pwa-v119/);
+  assert.match(worker, /codex-pwa-v120/);
 });
 
 test("conversation list separates recent, all-history, and archived sessions", async () => {
@@ -2723,16 +2724,14 @@ test("task inbox supports bounded batch selection, read state, and archive actio
   assert.match(actions, /restoring \? "unarchive" : "archive"/);
   assert.match(css, /\.thread-batch-actions\s*\{/);
   assert.match(css, /\.thread-select\s*\{/);
-  assert.match(html, /id="threadTagFilter"/);
-  assert.match(html, /id="tagDialog"/);
-  assert.match(app, /THREAD_TAGS_STORAGE_KEY/);
-  assert.match(app, /thread-tags\.js/);
-  assert.match(app, /readStoredThreadTags\(localStorage\)/);
-  assert.match(app, /persistStoredThreadTags\(localStorage/);
-  assert.match(listView, /function syncTagFilterOptions\(/);
-  assert.match(app, /function openTagDialog\(/);
-  assert.match(listView, /编辑本机标签/);
-  assert.match(css, /\.thread-tag\s*\{/);
+  assert.doesNotMatch(html, /id="threadTagFilter"/);
+  assert.doesNotMatch(html, /id="tagDialog"/);
+  assert.doesNotMatch(app, /THREAD_TAGS_STORAGE_KEY/);
+  assert.doesNotMatch(app, /thread-tags\.js/);
+  assert.doesNotMatch(app, /readStoredThreadTags\(localStorage\)/);
+  assert.doesNotMatch(listView, /function syncTagFilterOptions\(/);
+  assert.doesNotMatch(app, /function openTagDialog\(/);
+  assert.doesNotMatch(css, /\.thread-tag\s*\{/);
 });
 
 test("selected task archive state is independent from the sidebar list mode", async () => {
@@ -3225,7 +3224,7 @@ test("Goal state, confirmation actions, and top-level task menus are wired", asy
   assert.match(goalActions, /正在保存 Goal/);
   assert.match(app, /加载中……/);
   assert.match(historyNodes, /historyNodesList\.setAttribute\("aria-busy"/);
-  assert.match(worker, /codex-pwa-v119/);
+  assert.match(worker, /codex-pwa-v120/);
 });
 
 test("history pages are normalized to chronological order", () => {
@@ -3331,5 +3330,5 @@ test("mobile layout constrains long task titles and dynamic controls", async () 
   assert.match(css, /html\s*\{[^}]*overflow:\s*hidden[^}]*overscroll-behavior:\s*none/s);
   assert.match(css, /\.app-shell\s*\{[^}]*position:\s*fixed[^}]*overflow:\s*hidden/s);
   assert.match(css, /\.sidebar\s*\{[^}]*overflow:\s*hidden[^}]*overscroll-behavior:\s*none/s);
-  assert.match(css, /\.sidebar\s*\{\s*right:\s*7%/s);
+  assert.match(css, /\.sidebar\s*\{\s*right:\s*14%/s);
 });

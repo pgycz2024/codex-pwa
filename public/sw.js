@@ -1,4 +1,4 @@
-const CACHE = "codex-pwa-v119";
+const CACHE = "codex-pwa-v120";
 const ASSETS = [
   "/",
   "/styles.css",
@@ -16,7 +16,6 @@ const ASSETS = [
   "/message-reconcile.js",
   "/upload-utils.js",
   "/storage-utils.js",
-  "/thread-tags.js",
   "/event-session.js",
   "/virtual-list.js",
   "/model-display.js",

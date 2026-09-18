@@ -211,6 +211,41 @@ export function createThreadService({
     };
   }
 
+  function conversationItemText(item) {
+    if (!item || (item.type !== "userMessage" && item.type !== "agentMessage")) return "";
+    const content = item.content;
+    const parts = Array.isArray(content) ? content : [content];
+    const text = parts.map((part) => {
+      if (typeof part === "string") return part;
+      if (part && typeof part === "object") return part.text || part.value || part.content || "";
+      return "";
+    }).join(" ");
+    return String(item.text || text || "").replace(/\s+/g, " ").trim().slice(0, 1_000);
+  }
+
+  async function readRecentThreadMessages(threadId, limit = 1) {
+    const page = await readThreadTurnsPage(threadId, {
+      validate: false,
+      limit: Math.min(8, Math.max(1, Number(limit) || 1)),
+      itemsView: "summary",
+      sortDirection: "desc",
+    });
+    const messages = [];
+    for (const turn of page.data || []) {
+      for (const item of [...(turn.items || [])].reverse()) {
+        const text = conversationItemText(item);
+        if (!text) continue;
+        messages.push({
+          text,
+          role: item.type === "userMessage" ? "user" : "assistant",
+          at: item.sentAt || item.completedAt || item.startedAt || turn.completedAt || turn.updatedAt || turn.createdAt || null,
+        });
+        if (messages.length >= 8) return messages;
+      }
+    }
+    return messages;
+  }
+
   async function readThreadTurnsPage(threadId, {
     cursor = null,
     limit = HISTORY_PAGE_SIZE,
@@ -388,5 +423,5 @@ export function createThreadService({
     return cached.output;
   }
 
-  return { allowedThread, requestThreadGoal, requestThreadGoalBestEffort, goalUnsupportedError, goalSetParams, readThreadTurnsPage, readActiveNarrative, syncActiveTurnFromHistory, subscribeThread, serializeThreadWithOrigin, threadWriteConflictError, readHistoryOutput };
+  return { allowedThread, requestThreadGoal, requestThreadGoalBestEffort, goalUnsupportedError, goalSetParams, readThreadTurnsPage, readRecentThreadMessages, readActiveNarrative, syncActiveTurnFromHistory, subscribeThread, serializeThreadWithOrigin, threadWriteConflictError, readHistoryOutput };
 }

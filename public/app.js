@@ -6,12 +6,6 @@ import { normalizeUserMessageText, reconcilePendingUserMessage } from "./message
 import { filePreviewHref } from "./file-links.js";
 import { formatUploadSize } from "./upload-utils.js";
 import { readStoredStringArray } from "./storage-utils.js";
-import {
-  THREAD_TAGS_STORAGE_KEY,
-  normalizeThreadTags,
-  persistThreadTags as persistStoredThreadTags,
-  readStoredThreadTags,
-} from "./thread-tags.js";
 import { createEventDeduper, persistEventId, readStoredEventId } from "./event-session.js";
 import { boundedWindow, fixedVirtualRange } from "./virtual-list.js";
 import { longReplyPresentation } from "./message-display.js";
@@ -81,8 +75,6 @@ const stored = {
   lastDirectory: localStorage.getItem("codex-pwa-last-directory") || "",
 };
 
-stored.threadTags = readStoredThreadTags(localStorage);
-
 const state = {
   roots: [],
   accessRoots: { configured: [], additional: [], roots: [], maxAdditionalRoots: 32 },
@@ -120,9 +112,6 @@ const state = {
   threadListMode: "recent",
   threadFilter: "all",
   threadProjectFilter: "all",
-  threadTagFilter: "all",
-  threadTags: new Map(Object.entries(stored.threadTags)),
-  query: "",
   pinned: new Set(),
   legacyPins: new Set(stored.legacyPins),
   pinMigrations: new Set(),
@@ -138,7 +127,8 @@ const state = {
   auth: { authenticated: false, authEnabled: true, csrfToken: null },
   appStarted: false,
   renameTargetId: null,
-  tagTargetId: null,
+  searchSequence: 0,
+  searchAbortController: null,
   eventSource: null,
   eventConnected: false,
   eventGeneration: 0,
@@ -308,7 +298,8 @@ const elementIds = [
   "instanceName", "networkLabel",
   "notificationDialog", "notificationStatus", "closeNotificationButton", "enablePageNotificationButton", "enablePushButton", "disablePushButton",
   "sidebar", "sidebarBackdrop", "closeSidebarButton", "menuButton", "newTaskButton",
-  "emptyNewTaskButton", "threadSearch", "clearSearchButton", "recentTab", "allHistoryTab", "threadFilter", "threadProjectFilter", "threadTagFilter", "threadBatchActions", "selectVisibleThreadsButton", "markSelectedThreadsReadButton", "archiveSelectedThreadsButton", "clearSelectedThreadsButton",
+  "searchTaskButton", "searchDialog", "searchForm", "searchTaskInput", "clearSearchTaskButton", "searchStatus", "searchResults", "closeSearchButton",
+  "emptyNewTaskButton", "recentTab", "allHistoryTab", "threadFilter", "threadProjectFilter", "threadBatchActions", "selectVisibleThreadsButton", "markSelectedThreadsReadButton", "archiveSelectedThreadsButton", "clearSelectedThreadsButton",
   "archivedTab", "refreshButton", "threadList", "loadMoreThreadsButton", "themeButton", "themeIcon", "themeLabel", "helpButton", "notificationButton", "notificationLabel",
   "connectionDot", "connectionLabel", "chatTitle", "chatMeta", "stopButton", "contextButton",
   "changeCountBadge", "chatMenu", "renameThreadButton", "pinThreadButton", "archiveThreadButton",
@@ -339,7 +330,7 @@ const elementIds = [
   "submitConfirmButton", "helpDialog", "closeHelpButton", "helpQuestionInput", "askWebUiButton",
   "requestUiChangeButton", "deviceRenameDialog", "deviceRenameForm",
   "closeDeviceRenameButton", "deviceRenameInput",
-  "newEffortSelect", "newPermissionSelect", "renameDialog", "renameForm", "tagDialog", "tagForm", "closeTagButton", "tagInput",
+  "newEffortSelect", "newPermissionSelect", "renameDialog", "renameForm",
   "closeRenameButton", "renameInput", "settingsDialog", "settingsForm", "closeSettingsButton",
   "settingsModelSelect", "settingsEffortSelect", "settingsPermissionSelect", "settingsPendingHint", "goalDialog", "goalForm",
   "goalDialogTitle", "goalObjectiveInput", "goalBudgetInput", "goalStatusInput", "goalDialogHint", "closeGoalButton",
@@ -432,17 +423,14 @@ threadListViewManager = createThreadListViewManager({
   threadTitle,
   threadPreview,
   statusInfo,
-  sourceLabel,
   threadRecencyEpoch,
   normalizeEpochSeconds,
   formatRelative,
   formatAbsolute,
   isRecentThread,
   matchesThreadFilter,
-  tagsForThread,
   openThread,
   openThreadActionMenu,
-  openTagDialog,
   openFloatingMenu,
   togglePin,
   openRenameDialog,
@@ -542,6 +530,7 @@ const navigationPanels = createNavigationPanels({ sidebar: elements.sidebar, con
 installDialogFocus([
   elements.notificationDialog,
   elements.newTaskDialog,
+  elements.searchDialog,
   elements.directoryDialog,
   elements.fileBrowserDialog,
   elements.accessRootsDialog,
@@ -553,7 +542,6 @@ installDialogFocus([
   elements.historyNodesDialog,
   elements.deviceRenameDialog,
   elements.renameDialog,
-  elements.tagDialog,
   elements.settingsDialog,
   elements.goalDialog,
   elements.attachmentSourceDialog,
@@ -1107,7 +1095,7 @@ function threadTitle(thread) {
 }
 
 function threadPreview(thread) {
-  const preview = String(thread?.preview || "").replace(/\s+/g, " ").trim();
+  const preview = String(thread?.latestMessage || thread?.preview || "").replace(/\s+/g, " ").trim();
   if (!preview || preview === threadTitle(thread)) return basename(thread?.cwd);
   return preview;
 }
@@ -1187,6 +1175,72 @@ function closeSidebar() {
   navigationPanels.sidebar(false);
 }
 
+function clearSearchResults(message = "") {
+  elements.searchResults.replaceChildren();
+  elements.searchStatus.textContent = message;
+}
+
+function renderSearchResults(results = [], query = "") {
+  elements.searchResults.replaceChildren();
+  if (!query) {
+    elements.searchStatus.textContent = "输入关键词后搜索标题和最近消息";
+    return;
+  }
+  if (!results.length) {
+    elements.searchStatus.textContent = `没有找到包含“${query}”的会话`;
+    return;
+  }
+  elements.searchStatus.textContent = `找到 ${results.length} 个会话`;
+  const nodes = results.map((result) => {
+    const button = el("button", "search-result");
+    button.type = "button";
+    const heading = el("span", "search-result-title", threadTitle(result));
+    const snippet = el("span", "search-result-snippet", result.searchMatch?.snippet || threadPreview(result));
+    const meta = el("span", "search-result-meta", result.searchMatch?.kind === "title" ? "标题匹配" : "最近消息匹配");
+    button.append(heading, snippet, meta);
+    button.addEventListener("click", () => {
+      elements.searchDialog.close();
+      openThread(result.id, { archived: Boolean(result.archived) });
+    });
+    return button;
+  });
+  elements.searchResults.append(...nodes);
+}
+
+async function runThreadSearch() {
+  const query = elements.searchTaskInput.value.trim();
+  elements.clearSearchTaskButton.classList.toggle("hidden", !query);
+  const sequence = ++state.searchSequence;
+  state.searchAbortController?.abort();
+  if (!query) {
+    clearSearchResults();
+    return;
+  }
+  const controller = new AbortController();
+  state.searchAbortController = controller;
+  elements.searchStatus.textContent = "正在搜索标题和最近消息…";
+  elements.searchResults.replaceChildren();
+  try {
+    const result = await api(`/api/thread-search?query=${encodeURIComponent(query)}&archived=all`, { signal: controller.signal });
+    if (sequence !== state.searchSequence || controller.signal.aborted) return;
+    renderSearchResults(result.data || [], query);
+  } catch (error) {
+    if (error.name === "AbortError" || controller.signal.aborted || sequence !== state.searchSequence) return;
+    elements.searchStatus.textContent = `搜索失败：${error.message}`;
+  } finally {
+    if (state.searchAbortController === controller) state.searchAbortController = null;
+  }
+}
+
+function openSearchDialog() {
+  closeAllMenus();
+  elements.searchTaskInput.value = "";
+  elements.clearSearchTaskButton.classList.add("hidden");
+  clearSearchResults();
+  elements.searchDialog.showModal();
+  setTimeout(() => elements.searchTaskInput.focus(), 40);
+}
+
 function syncPinnedThreads(threads, { replace = false } = {}) {
   if (replace) state.pinned.clear();
   for (const thread of threads) {
@@ -1224,10 +1278,6 @@ function syncListModeTabs(...args) {
 
 function syncProjectFilterOptions(...args) {
   return threadListViewManager?.syncProjectFilterOptions(...args);
-}
-
-function syncTagFilterOptions(...args) {
-  return threadListViewManager?.syncTagFilterOptions(...args);
 }
 
 function visibleThreadCandidates(...args) {
@@ -1268,42 +1318,6 @@ function setThreadProjectFilter(project) {
   state.selectedThreadIds.clear();
   syncProjectFilterOptions();
   renderThreads();
-}
-
-function tagsForThread(threadId) {
-  return state.threadTags.get(String(threadId)) || [];
-}
-
-function persistThreadTags() {
-  persistStoredThreadTags(localStorage, state.threadTags);
-}
-
-function setThreadTagFilter(tag) {
-  state.threadTagFilter = tag && tag !== "all" ? String(tag) : "all";
-  state.selectedThreadIds.clear();
-  syncTagFilterOptions();
-  renderThreads();
-}
-
-function openTagDialog(thread = state.selectedThread) {
-  if (!thread) return;
-  state.tagTargetId = thread.id;
-  elements.tagInput.value = tagsForThread(thread.id).join(", ");
-  elements.tagDialog.showModal();
-  setTimeout(() => elements.tagInput.select(), 40);
-}
-
-function saveThreadTags(event) {
-  event.preventDefault();
-  if (!state.tagTargetId) return;
-  const tags = normalizeThreadTags(elements.tagInput.value);
-  if (tags.length) state.threadTags.set(state.tagTargetId, tags);
-  else state.threadTags.delete(state.tagTargetId);
-  persistThreadTags();
-  syncTagFilterOptions();
-  renderThreads();
-  elements.tagDialog.close();
-  showToast(tags.length ? uiText("app.saveThreadTags.showToast2") : uiText("app.saveThreadTags.showToast"));
 }
 
 function positionFloatingMenu(menu) {
@@ -1416,7 +1430,6 @@ async function loadThreads({ silent = false, append = false, isCurrent = () => t
   }
   const listArchived = state.threadListMode === "archived";
   const params = new URLSearchParams({ archived: String(listArchived) });
-  if (state.query) params.set("search", state.query);
   params.set("limit", "50");
   if (append && state.threadCursor) params.set("cursor", state.threadCursor);
   state.threadsLoadingMore = append;
@@ -2811,11 +2824,10 @@ function updateChatHeader() {
   const cwd = state.selectedThread.cwd || "";
   const parts = [cwd ? `工作目录：${basename(cwd)}` : "工作目录未知"];
   if (state.selectedThread.gitInfo?.branch) parts.push(state.selectedThread.gitInfo.branch);
-  parts.push(`创建来源：${sourceLabel(state.selectedThread)}`);
   parts.push(statusInfo(state.selectedThread.status).label);
   elements.chatMeta.textContent = parts.filter(Boolean).join(" · ");
-  elements.chatMeta.title = `${cwd || "工作目录未知"} · 创建来源：${sourceLabel(state.selectedThread)}`;
-  elements.chatMeta.setAttribute("aria-label", `${cwd ? `工作目录：${cwd}` : "工作目录未知"}；创建来源：${sourceLabel(state.selectedThread)}`);
+  elements.chatMeta.title = cwd || "工作目录未知";
+  elements.chatMeta.setAttribute("aria-label", cwd ? `工作目录：${cwd}` : "工作目录未知");
 }
 
 function updateChatActions() {
@@ -3513,6 +3525,18 @@ function wireEvents() {
   elements.closeSidebarButton.addEventListener("click", closeSidebar);
   elements.sidebarBackdrop.addEventListener("click", closeSidebar);
   elements.newTaskButton.addEventListener("click", () => openNewTaskDialog());
+  elements.searchTaskButton.addEventListener("click", openSearchDialog);
+  elements.closeSearchButton.addEventListener("click", () => elements.searchDialog.close());
+  elements.searchForm.addEventListener("submit", (event) => { event.preventDefault(); runThreadSearch(); });
+  elements.searchTaskInput.addEventListener("input", debounce(() => runThreadSearch(), 260));
+  elements.clearSearchTaskButton.addEventListener("click", () => {
+    elements.searchTaskInput.value = "";
+    runThreadSearch();
+    elements.searchTaskInput.focus();
+  });
+  elements.searchDialog.addEventListener("click", (event) => {
+    if (event.target === elements.searchDialog) elements.searchDialog.close();
+  });
   elements.emptyNewTaskButton.addEventListener("click", () => openNewTaskDialog());
   document.querySelectorAll(".suggestion").forEach((button) => button.addEventListener("click", () => openNewTaskDialog(button.dataset.prompt || "")));
   elements.closeDialogButton.addEventListener("click", () => {
@@ -3675,7 +3699,6 @@ function wireEvents() {
   );
   elements.threadFilter.addEventListener("change", () => setThreadFilter(elements.threadFilter.value));
   elements.threadProjectFilter.addEventListener("change", () => setThreadProjectFilter(elements.threadProjectFilter.value));
-  elements.threadTagFilter.addEventListener("change", () => setThreadTagFilter(elements.threadTagFilter.value));
   elements.selectVisibleThreadsButton.addEventListener("click", () => {
     const candidates = visibleThreadCandidates();
     const allSelected = candidates.length > 0 && candidates.every((thread) => state.selectedThreadIds.has(thread.id));
@@ -3697,17 +3720,6 @@ function wireEvents() {
   });
   elements.loadMoreThreadsButton.addEventListener("click", () => {
     loadThreads({ silent: true, append: true }).catch((error) => showToast(error.message));
-  });
-  elements.threadSearch.addEventListener("input", debounce(() => {
-    closeAllMenus();
-    state.query = elements.threadSearch.value.trim();
-    elements.clearSearchButton.classList.toggle("hidden", !state.query);
-    loadThreads().catch((error) => showToast(error.message));
-  }));
-  elements.clearSearchButton.addEventListener("click", () => {
-    closeAllMenus();
-    elements.threadSearch.value = ""; state.query = ""; elements.clearSearchButton.classList.add("hidden");
-    loadThreads().catch((error) => showToast(error.message));
   });
   elements.themeButton.addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
   elements.composer.addEventListener("submit", sendPrompt);
@@ -3816,8 +3828,6 @@ function wireEvents() {
   });
   elements.closeRenameButton.addEventListener("click", () => elements.renameDialog.close());
   elements.renameForm.addEventListener("submit", renameThread);
-  elements.closeTagButton.addEventListener("click", () => elements.tagDialog.close());
-  elements.tagForm.addEventListener("submit", saveThreadTags);
   elements.modelChip.addEventListener("click", openSettingsDialog);
   elements.effortChip.addEventListener("click", openSettingsDialog);
   elements.closeSettingsButton.addEventListener("click", () => elements.settingsDialog.close());
@@ -3825,7 +3835,7 @@ function wireEvents() {
   elements.settingsModelSelect.addEventListener("change", () => syncEffortOptions(elements.settingsEffortSelect, elements.settingsModelSelect.value, ""));
   elements.closeGoalButton.addEventListener("click", () => elements.goalDialog.close());
   elements.goalForm.addEventListener("submit", saveGoal);
-  for (const dialog of [elements.newTaskDialog, elements.renameDialog, elements.tagDialog, elements.settingsDialog, elements.goalDialog, elements.deviceRenameDialog, elements.credentialsDialog, elements.accessRootsDialog]) {
+  for (const dialog of [elements.newTaskDialog, elements.searchDialog, elements.renameDialog, elements.settingsDialog, elements.goalDialog, elements.deviceRenameDialog, elements.credentialsDialog, elements.accessRootsDialog]) {
     dialog.addEventListener("click", (event) => {
       if (event.target !== dialog) return;
       if (dialog === elements.newTaskDialog && state.uploadRequest && state.uploadContext === "new") {

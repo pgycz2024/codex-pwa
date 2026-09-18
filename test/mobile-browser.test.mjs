@@ -114,6 +114,13 @@ function jsonRoute(url) {
   }
   if (parsed.pathname === "/api/models") return { data: [] };
   if (parsed.pathname === "/api/threads") return { data: [thread], nextCursor: null };
+  if (parsed.pathname === "/api/thread-search") {
+    const query = parsed.searchParams.get("query") || "";
+    return query ? {
+      data: [{ ...thread, latestMessage: "移动端布局回归测试的最新消息", searchMatch: { kind: "message", snippet: "…移动端布局回归测试的最新消息…" } }],
+      limited: true,
+    } : { data: [] };
+  }
   if (parsed.pathname === `/api/threads/${thread.id}`) {
     return {
       thread,
@@ -568,7 +575,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     "inserting newer tasks must keep the currently read card at the same screen position");
   await evaluate(cdp, `(() => {
     window.__listFocus.click();
-    document.getElementById('clearSearchButton').click();
+    document.getElementById('refreshButton').click();
   })()`);
   assert.equal(await evaluate(cdp, `window.__listFocus.isConnected && document.activeElement === window.__listFocus && window.__listFocus.checked`), true,
     "an explicit list reload must retain selection and focus while fetching");
@@ -615,8 +622,23 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   await evaluate(cdp, `document.getElementById('test-scroll-spacer').remove()`);
   await evaluate(cdp, `document.querySelector(".thread-menu-button").click()`);
   await waitForExpression(cdp, `document.querySelector(".floating-popover")`);
-  await evaluate(cdp, `document.getElementById("threadSearch").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))`);
+  await evaluate(cdp, `document.getElementById("searchTaskButton").dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))`);
   assert.equal(await evaluate(cdp, `document.querySelector(".floating-popover") === null`), true);
+
+  await evaluate(cdp, `document.getElementById("searchTaskButton").click()`);
+  await waitForExpression(cdp, `document.getElementById("searchDialog").open`);
+  await evaluate(cdp, `(() => {
+    const input = document.getElementById("searchTaskInput");
+    input.value = "移动端";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  })()`);
+  await waitForExpression(cdp, `document.querySelectorAll(".search-result").length === 1`);
+  assert.equal(await evaluate(cdp, `document.querySelectorAll(".search-clear-button").length`), 1);
+  assert.equal(await evaluate(cdp, `document.querySelector(".search-result-snippet").textContent.includes("移动端")`), true);
+  await evaluate(cdp, `document.getElementById("clearSearchTaskButton").click()`);
+  assert.equal(await evaluate(cdp, `document.getElementById("searchTaskInput").value`), "");
+  await evaluate(cdp, `document.getElementById("closeSearchButton").click()`);
+  await waitForExpression(cdp, `!document.getElementById("searchDialog").open`);
 
   await evaluate(cdp, `(() => {
     document.querySelector(".thread-menu-button").click();
@@ -627,28 +649,7 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
   assert.equal(await evaluate(cdp, `document.querySelector(".floating-popover") === null`), true);
   await evaluate(cdp, `Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true }); document.dispatchEvent(new Event("visibilitychange"))`);
 
-  await evaluate(cdp, `document.querySelector(".thread-menu-button").click()`);
-  await waitForExpression(cdp, `[...document.querySelectorAll(".floating-popover button")].some((button) => button.textContent.includes("编辑本机标签"))`);
-  await evaluate(cdp, `([...document.querySelectorAll(".floating-popover button")].find((button) => button.textContent.includes("编辑本机标签"))).click()`);
-  await waitForExpression(cdp, `document.getElementById("tagDialog").open`);
-  await evaluate(cdp, `(() => {
-    document.getElementById("tagInput").value = "待复核, 移动端";
-    document.getElementById("tagForm").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
-  })()`);
-  await waitForExpression(cdp, `!document.getElementById("tagDialog").open && document.querySelector(".thread-tag")`);
-  assert.deepEqual(await evaluate(cdp, `({
-    tags: [...document.querySelectorAll(".thread-tag")].map((node) => node.textContent),
-    stored: JSON.parse(localStorage.getItem("codex-pwa-thread-tags")),
-  })`), {
-    tags: ["待复核", "移动端"],
-    stored: { "mobile-e2e-thread": ["待复核", "移动端"] },
-  });
-  await evaluate(cdp, `(() => {
-    const filter = document.getElementById("threadTagFilter");
-    filter.value = "移动端";
-    filter.dispatchEvent(new Event("change", { bubbles: true }));
-  })()`);
-  assert.equal(await evaluate(cdp, `document.querySelectorAll(".thread-card").length`), 1);
+  assert.equal(await evaluate(cdp, `document.getElementById("threadTagFilter") === null && document.getElementById("tagDialog") === null && document.querySelector(".thread-tag") === null`), true);
 
   await evaluate(cdp, `document.getElementById("menuButton").click(); document.getElementById("trustedDevicesButton").focus(); document.getElementById("trustedDevicesButton").click()`);
   await waitForExpression(cdp, `document.getElementById("devicesDialog").open`);

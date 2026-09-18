@@ -51,25 +51,23 @@
         <div class="sidebar-brand">
           <div class="brand-mark"><img src="/icon.svg" alt="" /></div>
           <div class="brand-copy">
-            <strong>Codex Remote</strong>
-            <span id="instanceName">Linux Server</span>
+            <strong>Codex Remote <span class="brand-instance-separator" aria-hidden="true">·</span> <span id="instanceName">Linux Server</span></strong>
           </div>
           <button id="closeSidebarButton" class="icon-button mobile-only" type="button" aria-label="关闭侧栏" data-copy-aria-label="html.closeSidebarButton.aria-label">×</button>
         </div>
 
-        <button id="newTaskButton" class="new-task-button" type="button">
-          <span aria-hidden="true">＋</span>
-          <!--copy:headings.new_task-->新建任务<!--/copy-->
-          <kbd class="desktop-only">N</kbd>
-        </button>
-
-        <div class="search-box">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" /></svg>
-          <input id="threadSearch" type="search" aria-label="搜索任务" placeholder="搜索任务" autocomplete="off" data-copy-aria-label="html.threadSearch.aria-label" data-copy-placeholder="html.threadSearch.aria-label" />
-          <button id="clearSearchButton" class="clear-search hidden" type="button" aria-label="清除搜索" data-copy-aria-label="html.clearSearchButton.aria-label">×</button>
+        <div class="sidebar-primary-actions">
+          <button id="newTaskButton" class="new-task-button" type="button">
+            <span aria-hidden="true">＋</span>
+            <!--copy:headings.new_task-->新建任务<!--/copy-->
+            <kbd class="desktop-only">N</kbd>
+          </button>
+          <button id="searchTaskButton" class="search-task-button" type="button" aria-haspopup="dialog" aria-controls="searchDialog">
+            <span aria-hidden="true">⌕</span>
+            <!--copy:html.searchTaskButton.text-->搜索任务<!--/copy-->
+          </button>
         </div>
-
-        <div class="list-tabs" role="tablist" aria-label="任务范围" aria-orientation="horizontal" data-copy-aria-label="html.clearSearchButton.aria-label2">
+        <div class="list-tabs" role="tablist" aria-label="任务范围" aria-orientation="horizontal" data-copy-aria-label="html.threadScopeTabs.aria-label">
           <button id="recentTab" class="list-tab active" type="button" role="tab" aria-selected="true" aria-controls="threadList" tabindex="0"><!--copy:html.recentTab.text-->近7天任务<!--/copy--></button>
           <button id="allHistoryTab" class="list-tab" type="button" role="tab" aria-selected="false" aria-controls="threadList" tabindex="-1"><!--copy:html.allHistoryTab.text-->全部历史任务<!--/copy--></button>
           <button id="archivedTab" class="list-tab" type="button" role="tab" aria-selected="false" aria-controls="threadList" tabindex="-1"><!--copy:html.archivedTab.text-->已归档任务<!--/copy--></button>
@@ -94,12 +92,6 @@
             <option value="all"><!--copy:html.threadProjectFilter.text-->全部项目<!--/copy--></option>
           </select>
         </div>
-        <div class="list-filter-row">
-          <label class="list-filter-label" for="threadTagFilter"><!--copy:html.threadProjectFilter.text2-->标签<!--/copy--></label>
-          <select id="threadTagFilter" class="list-filter" aria-label="按本机标签筛选" data-copy-aria-label="html.threadTagFilter.aria-label">
-            <option value="all"><!--copy:html.threadTagFilter.text-->全部标签<!--/copy--></option>
-          </select>
-        </div>
         <div id="threadBatchActions" class="thread-batch-actions hidden" aria-live="polite">
           <button id="selectVisibleThreadsButton" type="button"><!--copy:html.selectVisibleThreadsButton.text-->选择当前列表<!--/copy--></button>
           <button id="markSelectedThreadsReadButton" type="button"><!--copy:html.markSelectedThreadsReadButton.text-->标记已读<!--/copy--></button>
@@ -117,18 +109,18 @@
               <span id="themeIcon" aria-hidden="true">☾</span>
               <span id="themeLabel"><!--copy:html.themeLabel.text-->深/浅色模式<!--/copy--></span>
             </button>
+            <button id="notificationButton" class="sidebar-utility" type="button"><span aria-hidden="true">♢</span><span id="notificationLabel"><!--copy:html.notificationLabel.text-->浏览器通知<!--/copy--></span></button>
             <button id="helpButton" class="sidebar-utility" type="button"><span aria-hidden="true">?</span><span><!--copy:headings.codex_remote_guide-->使用帮助<!--/copy--></span></button>
             <button id="trustedDevicesButton" class="sidebar-utility" type="button"><span aria-hidden="true">◉</span><span><!--copy:html.trustedDevicesButton.text-->已登录设备管理<!--/copy--></span></button>
-            <button id="logoutButton" class="sidebar-utility" type="button"><span aria-hidden="true">↪</span><span><!--copy:common.logoutCurrent-->退出当前设备<!--/copy--></span></button>
             <button id="refreshWebUiButton" class="sidebar-utility" type="button"><span aria-hidden="true">↻</span><span><!--copy:html.refreshWebUiButton.text-->刷新 Web UI<!--/copy--></span></button>
-            <button id="notificationButton" class="sidebar-utility" type="button"><span aria-hidden="true">♢</span><span id="notificationLabel"><!--copy:html.notificationLabel.text-->浏览器通知<!--/copy--></span></button>
-          </div>
-          <div class="server-status">
-            <span id="connectionDot" class="status-dot connecting"></span>
-            <div class="server-status-copy">
-              <strong id="connectionLabel"><!--copy:html.connectionLabel.text-->正在连接…<!--/copy--></strong>
-              <span class="status-separator" aria-hidden="true">·</span>
-              <span id="networkLabel"><!--copy:html.networkLabel.text-->受控私有网络<!--/copy--></span>
+            <button id="logoutButton" class="sidebar-utility" type="button"><span aria-hidden="true">↪</span><span><!--copy:common.logoutCurrent-->退出当前设备<!--/copy--></span></button>
+            <div class="server-status" aria-live="polite">
+              <span id="connectionDot" class="status-dot connecting"></span>
+              <div class="server-status-copy">
+                <strong id="connectionLabel"><!--copy:html.connectionLabel.text-->正在连接…<!--/copy--></strong>
+                <span class="status-separator" aria-hidden="true">·</span>
+                <span id="networkLabel"><!--copy:html.networkLabel.text-->受控私有网络<!--/copy--></span>
+              </div>
             </div>
           </div>
         </div>
@@ -290,6 +282,23 @@
           </div>
         </details>
         <button type="submit" class="primary-button full-width full-span"><!--copy:common.startTask-->开始任务<!--/copy--></button>
+      </form>
+    </dialog>
+
+    <dialog id="searchDialog" class="search-dialog" aria-labelledby="searchDialogTitle" aria-describedby="searchDialogHint">
+      <form id="searchForm" class="search-dialog-form">
+        <div class="dialog-heading">
+          <div><span class="eyebrow"><!--copy:html.searchTaskButton.text-->搜索任务<!--/copy--></span><h2 id="searchDialogTitle"><!--copy:html.searchDialogTitle.text-->搜索会话<!--/copy--></h2></div>
+          <button id="closeSearchButton" class="icon-button" type="button" aria-label="关闭搜索任务" data-copy-aria-label="html.closeSearchButton.aria-label">×</button>
+        </div>
+        <div class="search-dialog-input">
+          <span aria-hidden="true">⌕</span>
+          <input id="searchTaskInput" type="text" autocomplete="off" inputmode="search" aria-label="搜索会话标题和最近消息" placeholder="搜索会话标题和最近消息" data-copy-aria-label="html.searchTaskInput.aria-label" data-copy-placeholder="html.searchTaskInput.aria-label" />
+          <button id="clearSearchTaskButton" class="search-clear-button hidden" type="button" aria-label="清除搜索内容" data-copy-aria-label="html.clearSearchTaskButton.aria-label">×</button>
+        </div>
+        <p id="searchDialogHint" class="hint"><!--copy:html.searchDialogHint.text-->搜索会话标题和每个会话最近几条消息。<!--/copy--></p>
+        <p id="searchStatus" class="search-status" role="status" aria-live="polite"></p>
+        <div id="searchResults" class="search-results" aria-live="polite"></div>
       </form>
     </dialog>
 
@@ -547,15 +556,6 @@
         <div class="dialog-heading"><h2 id="renameDialogTitle"><!--copy:html.renameDialogTitle.text-->重命名任务<!--/copy--></h2><button id="closeRenameButton" class="icon-button" type="button" aria-label="关闭任务重命名" data-copy-aria-label="html.closeRenameButton.aria-label">×</button></div>
         <label class="field"><span><!--copy:html.closeRenameButton.text-->任务名称<!--/copy--></span><input id="renameInput" maxlength="160" required /></label>
         <button class="primary-button full-width" type="submit"><!--copy:common.save-->保存<!--/copy--></button>
-      </form>
-    </dialog>
-
-    <dialog id="tagDialog" class="small-dialog" aria-labelledby="tagDialogTitle" aria-describedby="tagDialogDescription">
-      <form id="tagForm" class="dialog-form">
-        <div class="dialog-heading"><h2 id="tagDialogTitle"><!--copy:html.tagDialogTitle.text-->编辑本机标签<!--/copy--></h2><button id="closeTagButton" class="icon-button" type="button" aria-label="关闭标签编辑" data-copy-aria-label="html.closeTagButton.aria-label">×</button></div>
-        <label class="field"><span><!--copy:html.closeTagButton.text-->标签（用逗号分隔，最多 5 个）<!--/copy--></span><input id="tagInput" maxlength="140" placeholder="例如：待复核, 论文, 优先" data-copy-placeholder="html.tagInput.placeholder" /></label>
-        <p id="tagDialogDescription" class="hint"><!--copy:html.tagDialogDescription.text-->标签仅保存在当前浏览器，不会写入 Codex 任务或同步到其他设备。<!--/copy--></p>
-        <button class="primary-button full-width" type="submit"><!--copy:html.tagDialogDescription.text2-->保存标签<!--/copy--></button>
       </form>
     </dialog>
 
