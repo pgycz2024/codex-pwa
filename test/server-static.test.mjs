@@ -2653,13 +2653,14 @@ test("sidebar utility menu is a compact 3x3 layout with inline connection status
   assert.doesNotMatch(app, /renderFileBrowserBreadcrumbs/);
   assert.match(html, /id="logoutAllButton"[^>]*>退出全部设备/);
   assert.match(css, /\.sidebar-menu-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3/);
-  assert.match(css, /grid-template-areas:\s*"files theme notification"\s*"help devices refresh"\s*"logout status status"/);
+  assert.match(css, /grid-template-areas:\s*"files theme notification"\s*"help devices refresh"\s*"logout status network"/);
   // Chrome checks consistent action typography and 200% font scaling without
   // requiring fixed pixel font declarations.
   assert.match(css, /\.sidebar-menu-grid \.sidebar-utility > span:first-child\s*\{[^}]*flex:\s*0 0 16px/);
-  assert.match(css, /\.server-status-copy\s*\{[^}]*display:\s*grid/);
-  assert.match(css, /#notificationButton > span:last-child\s*\{[^}]*white-space:\s*pre-line/);
+  assert.match(css, /\.server-status-copy\s*\{[^}]*text-align:\s*left/);
+  assert.match(css, /\.network-status\s*\{[^}]*align-items:\s*flex-start/);
   assert.match(css, /#networkLabel\s*\{[^}]*white-space:\s*normal[^}]*overflow-wrap:\s*anywhere/);
+  assert.match(app, /elements\.networkName\.textContent/);
   assert.match(css, /\.directory-current code\s*\{[^}]*direction:\s*rtl[^}]*text-align:\s*left/);
   assert.match(app, /refreshWebUiButton\.addEventListener/);
   assert.match(app, /registration\.waiting\.postMessage\(\{ type: "SKIP_WAITING" \}\)/);
@@ -2670,7 +2671,7 @@ test("sidebar utility menu is a compact 3x3 layout with inline connection status
   assert.match(notifications, /isSecureContext/);
   assert.match(app, /notificationButton\.addEventListener\("click", enableBrowserNotifications\)/);
   assert.match(worker, /"\/browser-notifications\.js"/);
-  assert.match(worker, /codex-pwa-v121/);
+  assert.match(worker, /codex-pwa-v122/);
 });
 
 test("conversation list separates recent, all-history, and archived sessions", async () => {
@@ -3226,7 +3227,7 @@ test("Goal state, confirmation actions, and top-level task menus are wired", asy
   assert.match(goalActions, /正在保存 Goal/);
   assert.match(app, /加载中……/);
   assert.match(historyNodes, /historyNodesList\.setAttribute\("aria-busy"/);
-  assert.match(worker, /codex-pwa-v121/);
+  assert.match(worker, /codex-pwa-v122/);
 });
 
 test("history pages are normalized to chronological order", () => {

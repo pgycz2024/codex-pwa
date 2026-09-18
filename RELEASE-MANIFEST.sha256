@@ -2,9 +2,9 @@ b7c83b43987ab41c6b8f44ee555f6882c2139027870b78ec416bf1be84c06281  ./.env.example
 021dbe80bed0bf948145a69165a8dcffc8bd4ec6521ac8085f0c9ca34551e497  ./.github/workflows/check.yml
 58b4c2724065f243fc451393d986b13f0e4ce022f2e3927ccf6ab2bd8a57101d  ./.github/workflows/release.yml
 d8b52d27b70ac724ebbacc556b36e3ff78cb17f6e600936d764755345301e032  ./.gitignore
-6a47a67b8d27cf6a33365c8cd4f1be78477be012faa3826ca063994edc498e89  ./CHANGELOG.md
+7117c61b271996eb51e44acdcb2d30b67b277ae646d660a19bff40f5266800bd  ./CHANGELOG.md
 393fb7f844b8ff533de2f2856d7c7b9be3e4ed478f209500d760dc359b109e61  ./LICENSE
-a4d3612d66fd10ada4f6aa9e361a81181541fa1f762578c7be6ed94323190c39  ./README.md
+7b8c8b972fe6cdd2457967401cdc1123b3a876d4a168407de5ca5c2dd70f605b  ./README.md
 3fabc705bb2fec3f8dc12eb41e45e7e06d446477fb824d498e4315015842b040  ./SECURITY.md
 ab1bb3f491cb4439f6435f5f2a04a35c8ae924ecce62b908f84dfd8a8de86612  ./app-server-bridge.mjs
 e7d4bd854761ffb245cf4788bf07f08530b83ecd1c0928b38b4d3b7241534461  ./artifact-store.mjs
@@ -28,13 +28,13 @@ e4849c41164f17dd7f350b926427a499118dc7c1a0a1d6f8e4a7a753d42c4202  ./docs/UI_COPY
 8b90433e4c0e922f69f7d093851895e5ac2da2d46f561fd484ef578559392061  ./file-api.mjs
 a2049a62af23a95204dadda7c48b8335582c516c2028b3caf0b370cd8de828ee  ./file-approval-context.mjs
 ab61fc887ae26d0b51dd1ddd1de0207b7aa410a98ddba1130f671cf1e1e71cfc  ./file-search.mjs
-894858334979355e89c436c3174b640fb066a40fa4423ad28e10a4e0d9cc2f3f  ./package-lock.json
-410813e4c31b4580a41a3c4a5b50c20a8a7391d3743b970c049c53a76c6e1a29  ./package.json
+d39a596d9ef921739a0af12289b48f5a2260e98b0c0637ab5e71c669af9c30a4  ./package-lock.json
+241a1facdaa32a644b5a35d51f41f1a1384b5ab65fc5295ca9d7b247908f9b3d  ./package.json
 739dc6e43630ed660f337b4caf778a56304b7308ffb613a8e3c7d8f8710d49ef  ./protocol-adapter.mjs
 143839b7d55d19fb14134cf96a982359c8c788a53f82b9a543bd1bfa4340d47e  ./public/access-roots.js
 6b5b6ccb255565175c15b5d4b4588b2d8d726f8babb903a2161af9be0ae895fb  ./public/activity-view.js
 3b755db5f95dccbb11ee5c2ab3ce2d712550a20a06d79368b4f6ede670114256  ./public/api-client.js
-686bc1ec48feb3d9bdd4680963f3f0bd71bcf54c57eeee33fae4b9f43292ec3f  ./public/app.js
+4f6d46051427fd7654572c5d8ea121242929cb039fc89f825912e0215ee77938  ./public/app.js
 082d137674f9726fd1f0fa36d4d8b386017312caf30ca8810ad786893b3e4949  ./public/approval-actions.js
 784e9f957d09f63d0fb7eb4e3ddeffe6d339281c69b4504ffdc5aa72af2a639f  ./public/approval-decisions.js
 968b28f4030719df44fe79e91de41edeb4e2524db09772f09ba1b169c05a8f48  ./public/approval-policy.js
@@ -59,7 +59,7 @@ e51f5e08653e8c69d52286fbd6322ca69a812a6ec07c66929f7e279fe079d32f  ./public/histo
 a5050bac27ecc0ab9487262ed6125ed2458a1a456825c7129d0cdd24df5d4489  ./public/icon-192.png
 4452839b4bf0b8c3c040fa1b65333c9bc7b73a1c0b76bc06f3d6448ae6ce1832  ./public/icon-512.png
 6bc5037f8659dffb804088d0401d675c5a1e00e0780c245d64a5900b21325a3c  ./public/icon.svg
-44ff35873cd35ef1eb551acb941891ffd66533f6c9162fd7a5f80a8b6ac76b1f  ./public/index.html
+3ee3fe97d6eb5882c98d24be64221ea63b9fb78f42f0067fb3a12cb87a9c4f35  ./public/index.html
 224a0a420a5e459f03b5b082f007f05e4bc08f5664ae9d2ad98718082b5cde28  ./public/manifest.webmanifest
 ae00d411042ce49ccefde6f922ae564c278e02a70463b3c1445e53cc09033903  ./public/markdown-math.js
 7c8b61d1eafd4b294ede892e2ba4f45c0a907283e9823c30258add092653e337  ./public/markdown-renderer.js
@@ -77,8 +77,8 @@ a3f312f64f3a9db3de8fecbfd384f7e514c2bf27fdede3a970acf16ffbc132e6  ./public/push-
 241b230b503d0c3e6946caf53e45ecadaa5b606ece9ef966f34027b41763a46c  ./public/status-announcer.js
 7e60f7c3e0744d69606292aa32b1d8d60f410ef3510dafa9aa39a64195b8eb63  ./public/status-display.js
 847552fe3d3a4ff8b58cab8a2df47e6aaa85015fb98460597bc6d0e1bcd0b5ac  ./public/storage-utils.js
-13d4c543d4f63b8c86ccf5f23c85e4c050725376c5891cf68089963a6386fc20  ./public/styles.css
-c0ae72b39674750844b78b1a58274cb18809ce3557d2961c387bd3818d1417ef  ./public/sw.js
+cc2b945fb92d129987ce6f33b4b218b65bb45ce973467b8f5f0217245315cf40  ./public/styles.css
+734d471deeddaf41564471de5bfd2c8de57776907c2301fc037e7249fb32af36  ./public/sw.js
 2d43eaa59451724b207f6d82226047d755b6705c45706cf61a2c74986dfd834d  ./public/tab-navigation.js
 364838fd0baa34c6525dd31742352663aac582c134a31d222fe37d866c920b00  ./public/task-composer.js
 0dfbe357fae8c781adc775cc0ea3a4eeff94af3ee810c759272e98ccfd86ed40  ./public/task-settings.js
@@ -90,7 +90,7 @@ d5164390362121012794e493dada7cfc03f89de260fbbb1ceeb5f42af14c6cd7  ./public/threa
 b56635700f11c1cfce5a6686737f86a0cc8305d90a25c5bd482d8ec6ca6b8b23  ./public/thread-tags.js
 ba7a00e390902e637a2d28683418d3f26a359e9c2cdca6520721dc27a0374ece  ./public/thread-view-state.js
 e05c396d96012a3c45ec648aff5865ce6db9c1c0bdc7a89bed82252eebd76989  ./public/time-display.js
-cc4f85483d2caa173c364dd3b357ebe7341d8270bf75bf47e36fcd5a06790bbe  ./public/ui-copy.js
+a1267837fe7d567e7a2384c87e55c533ef77a85e812bb4c42f5d8be9cc69ff65  ./public/ui-copy.js
 0206747cdb898dfbff34b28b58821bf9d8306e9d015813c985bea75e549e196e  ./public/upload-utils.js
 590efd80d74524173e5934a381ff6c8b9428ec9c968477199dc1aa3bbb3a68bf  ./public/virtual-list.js
 f7c25cc8c7894c23bd5f6357bf2f8c86c477b0f5ddf20ad7b9e1eec819ddb97c  ./public/write-request.js
@@ -134,7 +134,7 @@ d7d404412ae3deee5e0ebee180b2b9b2936582053b536c8b42b0d9afba2b062a  ./test/file-ap
 5b15705be40fa855d8f4f6550656804c79053aa6e3baaf7c5c345f7e450ada3e  ./test/live-recovery-guard.test.mjs
 56aea43fa816ff9900ccda06ca86ce9cce2eba45a6f036abc391061272b0c20e  ./test/message-identity.test.mjs
 f2928cb63039eb9dbf904b51f8df559a338b4175b6da1a3091e21b1c1a24c833  ./test/message-time.test.mjs
-716cf78d4d2e753dab6a688565eec513c6007bc456249ee7c1e2c5748d4eb588  ./test/mobile-browser.test.mjs
+1a26803f3129306da69c687fe00f322b1f08bd34c8b33e5549448c8b5898717e  ./test/mobile-browser.test.mjs
 03a94465cadf07a376d438738e576d4d8c609a50968134a51664f93a0285deb3  ./test/module-boundaries.test.mjs
 ca5b98e9b1d978411a5a3e21c943d0256c187df58243389597ad8e6bf34d8520  ./test/push-browser.test.mjs
 936ae6907042275395ab529a5d8907b9d0f22fc981e9c6d7549cd9e90db32dce  ./test/push-config.test.mjs
@@ -143,7 +143,7 @@ f93f1ce80b40718d1df53f0da18b4085ca4b391234a8f045978b8a90ac698481  ./test/push-ht
 a732f4fa9613ca48c007d578a288cc67180af9ece306b7f30b39833577ee9fa1  ./test/release-manifest.test.mjs
 9493036db33c3c02b3b69da8be798b465123846690579b640db9a256062c147f  ./test/release-modules.test.mjs
 47fede786c612cf198fcfca28a338032c47141aa83bb0273a2c0d984cdf2e8dd  ./test/release-runtime.test.mjs
-bad49daef7cf2104211b08c09519c090c2e54a9771829d74bf035da76bd8b6ea  ./test/server-static.test.mjs
+088110f48a6f1b705e2ec76189ef8b32cb627afc2e646abecaacd5bc688d63c9  ./test/server-static.test.mjs
 1e2457b970af679deb76beb62b8e3047a1d1e7a09978725a81f87a934380cd0c  ./test/task-recovery-http.test.mjs
 5aaa7e124cc4237affeca62797a7e634cd731821d3a873571734a4e0be333d50  ./test/task-recovery.test.mjs
 daa9f58520fb9e908b56c6c600150c9913dd2978007a8db4bb3faebef75e46f3  ./test/task-snapshot.test.mjs

@@ -554,27 +554,36 @@ test("mobile Chrome viewport keeps core navigation, dialogs, and long titles sta
     const grid = rect(document.querySelector('.sidebar-menu-grid'));
     const logout = rect(document.getElementById('logoutButton'));
     const status = rect(document.querySelector('.server-status'));
+    const dot = rect(document.getElementById('connectionDot'));
     const statusCopy = rect(document.querySelector('.server-status-copy'));
+    const devices = rect(document.getElementById('trustedDevicesButton'));
+    const network = rect(document.querySelector('.network-status'));
+    const networkName = rect(document.getElementById('networkName'));
+    const networkLabel = rect(document.getElementById('networkLabel'));
     const notificationLabel = document.getElementById('notificationLabel');
-    notificationLabel.textContent = '通知\\n（需 HTTPS）';
+    notificationLabel.textContent = 'HTTPS 通知';
     const notification = rect(document.getElementById('notificationButton'));
     const notificationText = rect(notificationLabel);
     return {
-      grid, logout, status, statusCopy, notification, notificationText,
+      grid, logout, status, dot, statusCopy, devices, network, networkName, networkLabel, notification, notificationText,
       notificationWhiteSpace: getComputedStyle(notificationLabel).whiteSpace,
       networkWhiteSpace: getComputedStyle(document.getElementById('networkLabel')).whiteSpace,
       networkWrap: getComputedStyle(document.getElementById('networkLabel')).overflowWrap,
     };
   })()`);
-  assert.ok(utilityFooter.status.width > utilityFooter.logout.width * 1.5,
-    'connection status uses the available middle and right utility cells');
-  assert.ok(Math.abs(
-    (utilityFooter.statusCopy.left + utilityFooter.statusCopy.width / 2)
-      - (utilityFooter.status.left + utilityFooter.status.width / 2),
-  ) < 2, `connection status copy is centered in its expanded cell: ${JSON.stringify(utilityFooter)}`);
-  assert.equal(utilityFooter.notificationWhiteSpace, 'pre-line');
-  assert.ok(utilityFooter.notificationText.height > 15, 'HTTPS hint can occupy a second line');
-  assert.ok(utilityFooter.notification.height >= utilityFooter.notificationText.height);
+  assert.equal(utilityFooter.status.width, utilityFooter.devices.width);
+  assert.ok(Math.abs(utilityFooter.status.left - utilityFooter.devices.left) < 1,
+    `connection status shares the device column: ${JSON.stringify(utilityFooter)}`);
+  assert.ok(Math.abs(utilityFooter.statusCopy.left - (utilityFooter.dot.left + utilityFooter.dot.width + 5)) < 2,
+    `connection label stays beside the aligned status dot: ${JSON.stringify(utilityFooter)}`);
+  assert.ok(Math.abs(utilityFooter.network.left - utilityFooter.notification.left) < 1,
+    'network block uses the right utility column');
+  assert.ok(Math.abs(utilityFooter.network.top - utilityFooter.status.top) < 1,
+    'network block shares the third utility row');
+  assert.ok(utilityFooter.networkName.left <= utilityFooter.networkLabel.left + 1,
+    'network block is left aligned');
+  assert.equal(utilityFooter.notificationWhiteSpace, 'nowrap');
+  assert.ok(utilityFooter.notificationText.height <= 16, 'HTTPS notification label stays on one line');
   assert.equal(utilityFooter.networkWhiteSpace, 'normal');
   assert.equal(utilityFooter.networkWrap, 'anywhere');
   await inspectTouchTargets('#sidebar');

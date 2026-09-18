@@ -295,7 +295,7 @@ function syncActiveTaskSnapshot(threads) {
 const elementIds = [
   "appShell", "authGate", "loginForm", "loginUsername", "loginPassword", "rememberDevice",
   "loginError", "loginButton", "changeCredentialsLoginButton", "logoutButton", "logoutAllButton", "refreshWebUiButton", "serverFilesButton", "trustedDevicesButton",
-  "instanceName", "networkLabel",
+  "instanceName", "networkName", "networkLabel",
   "notificationDialog", "notificationStatus", "closeNotificationButton", "enablePageNotificationButton", "enablePushButton", "disablePushButton",
   "sidebar", "sidebarBackdrop", "closeSidebarButton", "menuButton", "newTaskButton",
   "searchTaskButton", "searchDialog", "searchForm", "searchTaskInput", "clearSearchTaskButton", "searchStatus", "searchResults", "closeSearchButton",
@@ -3167,7 +3167,15 @@ async function loadStatus({ isCurrent = () => true } = {}) {
   state.releasingThreads = new Set(status.releasingThreads || []);
   elements.cwdInput.value ||= state.roots[0] || "";
   elements.instanceName.textContent = status.instanceName || "Linux Server";
-  elements.networkLabel.textContent = status.networkLabel || "受控私有网络";
+  const network = String(status.networkLabel || uiText("html.networkLabel.text")).trim();
+  const separator = network.indexOf("·");
+  if (separator > 0) {
+    elements.networkName.textContent = network.slice(0, separator).trim() || uiText("html.networkName.text");
+    elements.networkLabel.textContent = network.slice(separator + 1).trim() || uiText("html.networkLabel.text");
+  } else {
+    elements.networkName.textContent = uiText("html.networkName.text");
+    elements.networkLabel.textContent = network || uiText("html.networkLabel.text");
+  }
   // A successful HTTP poll cannot prove that the event stream is connected.
   if (state.eventConnected) setConnection(status.bridge, status.error);
   const pendingApprovals = new Map();
